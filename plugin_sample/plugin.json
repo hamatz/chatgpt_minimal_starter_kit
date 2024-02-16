@@ -1,0 +1,7 @@
+{
+    "name": "サンプル１号",
+    "version": "0.0.1",
+    "description": "ただのHello World",
+    "main_module": "sample_plugin",
+    "icon": "icon.png"
+}
