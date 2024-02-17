@@ -46,7 +46,7 @@ class PluginManager:
         plugin_module = importlib.import_module(plugin_info["main_module"])
         print(plugin_module)
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
-        plugin_instance = plugin_class(self.ui_manager) 
+        plugin_instance = plugin_class(self.__ui_manager) 
         icon_path = os.path.join(extract_dir, plugin_info["icon"])
         with open(icon_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -69,14 +69,18 @@ class PluginManager:
             self.page.dialog.open = False
             self.page.update()
 
-        dlg_component = self.__ui_manager.get_component("confirm_daialog")
-        dlg_modal = dlg_component("プラグインの削除", "このプラグインを削除してもよろしいですか？", "いいえ", "はい", close_dlg, self.delete_plugin, plugin_dir, ui_elements)
+        dlg_component = self.__ui_manager.get_component("delete_confirm_daialog")
+        delete_target = [plugin_dir, ui_elements]
+        dlg_modal = dlg_component("プラグインの削除", "このプラグインを削除してもよろしいですか？", "いいえ", "はい", close_dlg, self.delete_plugin, delete_target)
 
         self.page.dialog = dlg_modal.get_widget()
         self.page.dialog.open = True
         self.page.update()
 
-    def delete_plugin(self, plugin_dir, ui_elements) -> None:
+    def delete_plugin(self, del_target: list) -> None:
+
+        plugin_dir = del_target[0]
+        ui_elements = del_target[1]
 
         def on_rm_error(func, path, exc_info) -> None:
             import stat

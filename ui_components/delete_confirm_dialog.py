@@ -1,6 +1,6 @@
 import flet as ft
 
-class ConfirmDialog:
+class DeleteConfirmDialog:
     def __init__(self, title_text: str, content_text: str, text_no: str, text_yes: str, func_close_dlg, function_on_click, delete_target: list):
         self.dialog = ft.AlertDialog(
             modal=True,
