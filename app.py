@@ -2,24 +2,21 @@ import flet as ft
 from plugin_manager import PluginManager
 from my_key_manager import MyKeyManager
 
-class MyApp:
+class MyBaseApp:
     def __init__(self, page: ft.Page) -> None:
         self.page = page
         self.page.title = "ChatGPT minimal starter kit"
         self.page.vertical_alignment = ft.MainAxisAlignment.START
 
-        # インスタンスの初期化
         self.mkm = MyKeyManager(self.page)
         self.pm = PluginManager(self.page, self.page_back)
-
-        # インスタンスを再利用するために、初期化をここで一度だけ実行
         self.mkm.load_my_key()
-        self.pm.load_installed_plugins()
 
     def show_main_page(self) -> None:
         def pick_file_and_install(e: ft.FilePickerResultEvent):
             self.pm.install_plugin(e)
 
+        self.pm.load_installed_plugins()
         # プラグインをインストールするボタンを表示する
         file_picker = ft.FilePicker(on_result=pick_file_and_install)
         self.page.overlay.append(file_picker)
@@ -33,7 +30,7 @@ class MyApp:
 
 
 def main(page: ft.Page) -> None:
-    app = MyApp(page)
+    app = MyBaseApp(page)
     app.show_main_page()
 
 if __name__ == "__main__":
