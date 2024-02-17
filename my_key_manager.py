@@ -15,10 +15,11 @@ MY_KEY_FILENAME = "my_app_info.json"
 
 class MyKeyManager:
 
-    def __init__(self, page: ft.Page):
+    def __init__(self, page: ft.Page, ui_manager):
           self.__my_app_key = None
           self.__my_pass_phrase = None
           self.__page = page
+          self.__ui_manager = ui_manager
 
     def __compute_hash(self, data) -> str:
         return hashlib.sha256(data).hexdigest()
@@ -67,7 +68,7 @@ class MyKeyManager:
         password = None
 
         def close_dlg(e):
-            dlg_modal.open = False
+            self.__page.dialog.open = False
             self.__page.update()
             handle_key_file()
 
@@ -76,22 +77,12 @@ class MyKeyManager:
             password= e.control.value
             self.__page.update()
 
-        dlg_modal = ft.AlertDialog(
-            modal=True,
-            title=ft.Text("パスワードの入力をお願いします"),
-            content= ft.TextField(
-                label="Your Password", 
-                password=True, 
-                on_change=lambda e:textbox_changed(e),),
-            actions=[
-                ft.TextButton("入力完了", on_click=lambda e: close_dlg(e)),
-            ],
-            actions_alignment=ft.MainAxisAlignment.END,
-        )
+        dlg_component = self.__ui_manager.get_component("password_daialog")
+        dlg_modal = dlg_component("パスワードの入力をお願いします", "Your Password", textbox_changed, "入力完了", close_dlg)
 
         def open_dlg_modal():
-            self.__page.dialog = dlg_modal
-            dlg_modal.open = True
+            self.__page.dialog = dlg_modal.get_widget()
+            self.__page.dialog.open = True
             self.__page.update()
 
         open_dlg_modal()
