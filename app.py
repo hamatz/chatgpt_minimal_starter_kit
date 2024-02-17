@@ -1,5 +1,6 @@
 import flet as ft
 from plugin_manager import PluginManager
+from my_key_manager import MyKeyManager
 
 def show_main_page(page: ft.Page) -> None:
     def pick_file_and_install(e: ft.FilePickerResultEvent):
@@ -7,6 +8,9 @@ def show_main_page(page: ft.Page) -> None:
 
     page.title = "ChatGPT minimal starter kit"
     page.vertical_alignment = ft.MainAxisAlignment.START
+
+    mkm = MyKeyManager(page)
+    mkm.load_my_key()
     pm = PluginManager(page, page_back)
     # インストール済みのプラグインを読み込む
     pm.load_installed_plugins()

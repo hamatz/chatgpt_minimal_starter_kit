@@ -7,3 +7,5 @@ __pycache__/
 work/*.*
 temp/*.*
 installed_plugins/*.*
+
+my_app_info.json
