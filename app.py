@@ -3,6 +3,7 @@ from plugin_manager import PluginManager
 from my_key_manager import MyKeyManager
 from ui_component_manager import UIComponentManager
 from ui_components.password_dialog import PasswordDialog
+from ui_components.confirm_dialog import ConfirmDialog
 
 class MyBaseApp:
     def __init__(self, page: ft.Page) -> None:
@@ -11,6 +12,7 @@ class MyBaseApp:
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.ui_manager = UIComponentManager()
         self.ui_manager.add_component("password_daialog", PasswordDialog)
+        self.ui_manager.add_component("confirm_daialog", ConfirmDialog)
         self.mkm = MyKeyManager(self.page, self.ui_manager)
         self.pm = PluginManager(self.page, self.page_back, self.ui_manager)
         self.mkm.load_my_key()
@@ -30,7 +32,6 @@ class MyBaseApp:
     def page_back(self) -> None:
         self.page.clean()
         self.show_main_page()
-
 
 def main(page: ft.Page) -> None:
     app = MyBaseApp(page)

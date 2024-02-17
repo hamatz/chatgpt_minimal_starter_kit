@@ -17,7 +17,7 @@ class PluginManager:
     def __init__(self, page: ft.Page, page_back, ui_manager: UIComponentManager):
         self.page = page
         self.page_back_func = page_back
-        self.ui_manager = ui_manager
+        self.__ui_manager = ui_manager
         if not os.path.exists(PLUGIN_FOLDER):
             os.makedirs(PLUGIN_FOLDER)
         if not os.path.exists(TEMP_WORK_FOLDER):
@@ -66,37 +66,29 @@ class PluginManager:
     def show_delete_confirmation(self, plugin_dir, ui_elements) -> None:
 
         def close_dlg(e) -> None:
-            dialog.open = False
+            self.page.dialog.open = False
             self.page.update()
-        # 削除確認ダイアログのUIを構築
-        dialog = ft.AlertDialog(
-            modal=True,
-            title=ft.Text("プラグインの削除"),
-            content=ft.Text("このプラグインを削除してもよろしいですか？"),
-            actions=[
-                ft.TextButton("いいえ", on_click=lambda e: close_dlg(e)),
-                ft.TextButton("はい", on_click=lambda e: self.delete_plugin(plugin_dir, ui_elements, dialog))
-            ],
-            actions_alignment=ft.MainAxisAlignment.END,
-        )
-        self.page.dialog = dialog
-        dialog.open = True
+
+        dlg_component = self.__ui_manager.get_component("confirm_daialog")
+        dlg_modal = dlg_component("プラグインの削除", "このプラグインを削除してもよろしいですか？", "いいえ", "はい", close_dlg, self.delete_plugin, plugin_dir, ui_elements)
+
+        self.page.dialog = dlg_modal.get_widget()
+        self.page.dialog.open = True
         self.page.update()
 
-    def delete_plugin(self, plugin_dir, ui_elements, dialog) -> None:
+    def delete_plugin(self, plugin_dir, ui_elements) -> None:
 
         def on_rm_error(func, path, exc_info) -> None:
             import stat
             os.chmod(path, stat.S_IWRITE)
             os.unlink(path)
-
         # プラグインディレクトリを削除
         shutil.rmtree(plugin_dir, onerror=on_rm_error)
         # UIからプラグイン関連の要素を削除
         for element in ui_elements:
             self.page.controls.remove(element)
         # 削除確認ダイアログを閉じる
-        dialog.open = False
+        self.page.dialog.open = False
         self.page.update()
 
     def load_installed_plugins(self) -> None:
@@ -112,7 +104,7 @@ class PluginManager:
                 # プラグインモジュールを動的にインポート
                 plugin_module = importlib.import_module(plugin_info["main_module"])
                 plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
-                plugin_instance = plugin_class(self.ui_manager) 
+                plugin_instance = plugin_class(self.__ui_manager) 
                 icon_path = os.path.join(plugin_dir, plugin_info["icon"])
                 with open(icon_path, "rb") as image_file:
                     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
