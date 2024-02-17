@@ -1,7 +1,7 @@
 import flet as ft
 from plugin_manager import PluginManager
 
-def show_main_page(page: ft.Page):
+def show_main_page(page: ft.Page) -> None:
     def pick_file_and_install(e: ft.FilePickerResultEvent):
         pm.install_plugin(e)
 
@@ -17,11 +17,11 @@ def show_main_page(page: ft.Page):
     page.add(install_button)
     page.update()
 
-def page_back(page: ft.Page):
+def page_back(page: ft.Page) -> None:
     page.clean()
     show_main_page(page)
 
-def main(page: ft.Page):
+def main(page: ft.Page) -> None:
     show_main_page(page)
 
 if __name__ == "__main__":

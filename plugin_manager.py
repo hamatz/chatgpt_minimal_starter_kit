@@ -20,7 +20,7 @@ class PluginManager:
         if not os.path.exists(TEMP_WORK_FOLDER):
             os.makedirs(TEMP_WORK_FOLDER)
 
-    def install_plugin(self, e: ft.FilePickerResultEvent):
+    def install_plugin(self, e: ft.FilePickerResultEvent) -> None:
         # プラグインを保存する一意のディレクトリを作成
         picked_file = e.files[0]
         picked_file_path = picked_file.path
@@ -58,9 +58,9 @@ class PluginManager:
         self.page.controls.extend([clickable_image, delete_button])
         self.page.update()
 
-    def show_delete_confirmation(self, plugin_dir, ui_elements):
+    def show_delete_confirmation(self, plugin_dir, ui_elements) -> None:
 
-        def close_dlg(e):
+        def close_dlg(e) -> None:
             dialog.open = False
             self.page.update()
         # 削除確認ダイアログのUIを構築
@@ -78,9 +78,9 @@ class PluginManager:
         dialog.open = True
         self.page.update()
 
-    def delete_plugin(self, plugin_dir, ui_elements, dialog):
+    def delete_plugin(self, plugin_dir, ui_elements, dialog) -> None:
 
-        def on_rm_error(func, path, exc_info):
+        def on_rm_error(func, path, exc_info) -> None:
             import stat
             os.chmod(path, stat.S_IWRITE)
             os.unlink(path)
@@ -94,13 +94,7 @@ class PluginManager:
         dialog.open = False
         self.page.update()
 
-    def load_plugin(self, plugin_module_name: str):
-        # プラグインモジュールを動的にインポート
-        plugin_module = __import__(plugin_module_name)
-        # プラグインのUIをビルドする関数を呼び出し
-        plugin_module.build_ui(self.page)
-
-    def load_installed_plugins(self):
+    def load_installed_plugins(self) -> None:
         for plugin_name in os.listdir(PLUGIN_FOLDER):
             plugin_dir = os.path.join(PLUGIN_FOLDER, plugin_name)
             if os.path.isdir(plugin_dir):
