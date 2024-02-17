@@ -79,7 +79,10 @@ class MyKeyManager:
         dlg_modal = ft.AlertDialog(
             modal=True,
             title=ft.Text("パスワードの入力をお願いします"),
-            content= ft.TextField(label="Your Password", on_change=lambda e:textbox_changed(e),),
+            content= ft.TextField(
+                label="Your Password", 
+                password=True, 
+                on_change=lambda e:textbox_changed(e),),
             actions=[
                 ft.TextButton("入力完了", on_click=lambda e: close_dlg(e)),
             ],
