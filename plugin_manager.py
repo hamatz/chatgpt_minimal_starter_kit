@@ -7,14 +7,17 @@ import json
 import importlib
 import flet as ft
 
+from ui_component_manager import UIComponentManager
+
 PLUGIN_FOLDER = "installed_plugins"
 TEMP_WORK_FOLDER = "temp"
 
 class PluginManager:
 
-    def __init__(self, page: ft.Page, page_back):
+    def __init__(self, page: ft.Page, page_back, ui_manager: UIComponentManager):
         self.page = page
         self.page_back_func = page_back
+        self.ui_manager = ui_manager
         if not os.path.exists(PLUGIN_FOLDER):
             os.makedirs(PLUGIN_FOLDER)
         if not os.path.exists(TEMP_WORK_FOLDER):
@@ -42,6 +45,8 @@ class PluginManager:
         # プラグインモジュールを動的にインポート
         plugin_module = importlib.import_module(plugin_info["main_module"])
         print(plugin_module)
+        plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+        plugin_instance = plugin_class(self.ui_manager) 
         icon_path = os.path.join(extract_dir, plugin_info["icon"])
         with open(icon_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -50,7 +55,7 @@ class PluginManager:
         # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
         clickable_image = ft.GestureDetector(
             content=app_icon,
-            on_tap= lambda _: plugin_module.build_ui(self.page, self.page_back_func)
+            on_tap= lambda _: plugin_instance.load(self.page, self.page_back_func)
         )
         #app_icon.on_click = lambda e: plugin_module.build_ui(self.page)
         # 削除ボタンの追加
@@ -106,6 +111,8 @@ class PluginManager:
                 sys.path.append(plugin_dir)
                 # プラグインモジュールを動的にインポート
                 plugin_module = importlib.import_module(plugin_info["main_module"])
+                plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+                plugin_instance = plugin_class(self.ui_manager) 
                 icon_path = os.path.join(plugin_dir, plugin_info["icon"])
                 with open(icon_path, "rb") as image_file:
                     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -114,7 +121,7 @@ class PluginManager:
                 # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
                 clickable_image = ft.GestureDetector(
                     content=app_icon,
-                    on_tap= lambda _: plugin_module.build_ui(self.page, self.page_back_func)
+                    on_tap= lambda _: plugin_instance.load(self.page, self.page_back_func)
                 )
                 # 削除ボタンとアイコンのUI要素を保持するリスト
                 ui_elements = [clickable_image]

@@ -1,7 +1,8 @@
 {
-    "name": "サンプル１号",
+    "name": "サンプル2号",
     "version": "0.0.1",
-    "description": "ただのHello World",
+    "description": "ただのHello World UIコンポーネント対応バージョン",
     "main_module": "sample_plugin",
-    "icon": "icon.png"
+    "plugin_name": "SamplePlugin1",
+    "icon": "icon2.png"
 }

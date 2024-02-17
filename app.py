@@ -1,6 +1,7 @@
 import flet as ft
 from plugin_manager import PluginManager
 from my_key_manager import MyKeyManager
+from ui_component_manager import UIComponentManager
 
 class MyBaseApp:
     def __init__(self, page: ft.Page) -> None:
@@ -9,7 +10,8 @@ class MyBaseApp:
         self.page.vertical_alignment = ft.MainAxisAlignment.START
 
         self.mkm = MyKeyManager(self.page)
-        self.pm = PluginManager(self.page, self.page_back)
+        self.ui_manager = UIComponentManager(self.page)
+        self.pm = PluginManager(self.page, self.page_back, self.ui_manager)
         self.mkm.load_my_key()
 
     def show_main_page(self) -> None:
