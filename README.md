@@ -1,4 +1,38 @@
-<img src="doc/img/craftforge_logo.png" width="40%">
-# CraftForge
-## chatgpt_minimal_starter_kit
-ChatGPTを利用したアプリケーションで簡単にPoCを行うための土台となる機構とその利用サンプル置き場
+<a name="readme-top"></a>
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+    <img src="doc/img/craftforge_logo.png" alt="Logo" width="200" height="200">
+  <h3 align="center">CraftForge</h3>
+  <p align="center">
+    chatgpt_minimal_starter_kit
+    <br />
+  </p>
+</div>
+
+<!-- ABOUT THE PROJECT -->
+## About The Project
+
+「自社にとって価値があるかどうかも分からないので試しに作ってみよう」という位置付けにあるPoCといえど、要件定義や費用対効果の議論、情報利用に関する関係各部との調整や、業務委託先とのスケジュールや費用の調整など周辺議論ばかりが続き、肝心の「さっさと動くものを使ってアイデアを試したい」という段階までなかなか辿り着けない、というケースが少なくないと思います
+
+そんな方々が、モバイルルーターとマシン１台で気軽にPoCを実践できるような、雛形となる仕組みが作れたら、多くのチームにとって有用なのではないか？という狙いで本プロジェクトを公開しております
+
+Points:
+* IT部門等と調整して、ネットワーク上にサーバーをデプロイする必要がありません
+* プラグイン機構を備えることで、zip形式で新しいアプリケーションを追加できます
+* ユーザ側でプロンプトだけを修正してちょっと試す、といったことが開発者に手間をかけずとも実施可能です
+* Fletをベースに構築しているので、プラグインの開発はPythonを利用することが可能です
+* UIコンポーネント機構が用意されており、プラグイン側でもそれが利用可能なのでUI構築の手間が削減可能です（UIコンポーネントの網羅性を上げるのはこれから）
+* API Layerにアクセストークンを利用するようなクラスを隠蔽する設計となっており、プラグイン開発者は相手のアクセストークン等を意識したコードを書く必要がありません（実装中）
+
+本プロジェクトはまだ出来立ての初期ステージであり、自由にご活用いただくにはもう少しお時間が必要となっておりますので、しばらくお待ちいただけますと幸いです
+
+
+Use the `BLANK_README.md` to get started.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+### Built With
+
+Flet : https://flet.dev/
