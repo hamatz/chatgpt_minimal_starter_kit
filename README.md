@@ -14,6 +14,9 @@
   <p align="center">
     Virtual Operating System for Proof of Concept
     <br />
+    <a href="https://github.com/hamatz/chatgpt_minimal_starter_kit/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/hamatz/chatgpt_minimal_starter_kit/issues">Request Feature</a>
   </p>
 </div>
 
