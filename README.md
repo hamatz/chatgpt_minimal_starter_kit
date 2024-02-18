@@ -5,7 +5,7 @@
     <img src="doc/img/craftforge_logo.png" alt="Logo" width="200" height="200">
   <h3 align="center">CraftForge</h3>
   <p align="center">
-    chatgpt_minimal_starter_kit
+    Virtual Operating System for Proof of Concept
     <br />
   </p>
 </div>
