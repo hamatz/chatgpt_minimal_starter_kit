@@ -6,6 +6,7 @@ from ui_components.password_dialog import PasswordDialog
 from ui_components.delete_confirm_dialog import DeleteConfirmDialog
 from ui_components.simple_header import SimpleHeader
 from ui_components.simple_footer import SimpleFooter
+from ui_components.app_container import AppContainer
 
 class CraftForgeBase:
     def __init__(self, page: ft.Page) -> None:
@@ -17,13 +18,14 @@ class CraftForgeBase:
         self.ui_manager.add_component("delete_confirm_daialog", DeleteConfirmDialog)
         self.ui_manager.add_component("simple_header", SimpleHeader)
         self.ui_manager.add_component("simple_footer", SimpleFooter)
+        self.ui_manager.add_component("app_container", AppContainer)
         self.mkm = MyKeyManager(self.page, self.ui_manager)
         self.pm = PluginManager(self.page, self.page_back, self.ui_manager)
         self.mkm.load_my_key()
 
     def show_main_page(self) -> None:
         def pick_file_and_install(e: ft.FilePickerResultEvent):
-            self.pm.install_plugin(e)
+            self.pm.install_plugin(e, main_container)
 
         my_header_cmp = self.ui_manager.get_component("simple_header")
         my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.0.1", "#20b2aa", 5, 5)
@@ -38,7 +40,7 @@ class CraftForgeBase:
             auto_scroll=True,
         )
         self.page.add(main_container)
-        self.pm.load_installed_plugins()
+        self.pm.load_installed_plugins(main_container)
         # プラグインをインストールするボタンを表示する
         file_picker = ft.FilePicker(on_result=pick_file_and_install)
         self.page.overlay.append(file_picker)
