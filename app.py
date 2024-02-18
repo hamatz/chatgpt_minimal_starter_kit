@@ -34,11 +34,19 @@ class CraftForgeBase:
         my_footer_instance = my_footer_cmp("@hamatz", "#20b2aa", 5, 5)
         my_footer_widget = my_footer_instance.get_widget()
         self.page.add(my_header_widget)
-        main_container = ft.ListView(
-            expand=True,
-            spacing=10,
-            auto_scroll=True,
+        main_container = ft.GridView(
+            expand=1,
+            runs_count=5,
+            max_extent=120,
+            child_aspect_ratio=1.0,
+            spacing=5,
+            run_spacing=5,
         )
+        # main_container = ft.ListView(
+        #     expand=True,
+        #     spacing=10,
+        #     auto_scroll=True,
+        # )
         self.page.add(main_container)
         self.pm.load_installed_plugins(main_container)
         # プラグインをインストールするボタンを表示する

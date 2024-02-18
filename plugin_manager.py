@@ -24,7 +24,6 @@ class PluginManager:
             os.makedirs(TEMP_WORK_FOLDER)
 
     def install_plugin(self, e: ft.FilePickerResultEvent, container: ft.Container) -> None:
-        self.myapp_container = container
         # プラグインを保存する一意のディレクトリを作成
         picked_file = e.files[0]
         picked_file_path = picked_file.path
@@ -47,6 +46,7 @@ class PluginManager:
         plugin_module = importlib.import_module(plugin_info["main_module"])
         print(plugin_module)
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+        print(plugin_class)
         plugin_instance = plugin_class(self.__ui_manager) 
         icon_path = os.path.join(extract_dir, plugin_info["icon"])
         with open(icon_path, "rb") as image_file:
@@ -56,23 +56,20 @@ class PluginManager:
         # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
         clickable_image = ft.GestureDetector(
             content=app_icon,
-            on_tap= lambda _: plugin_instance.load(self.page, self.page_back_func)
+            on_tap= lambda _, instance=plugin_instance: instance.load(self.page, self.page_back_func)
         )
         app_container_cmp = self.__ui_manager.get_component("app_container")
         app_title = plugin_info["name"]
         app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff", 5, 5)
         app_container_widget = app_container_instance.get_widget()
         deletable_app_container = ft.GestureDetector(
-            content=app_container_widget,
-            on_long_press_start= lambda e: self.show_delete_confirmation(plugin_dir, deletable_app_container)
-        )
-        #self.page.add(deletable_app_container)
-        self.myapp_container.controls.append(deletable_app_container)
+             content=app_container_widget,
+             on_long_press_start= lambda e: self.show_delete_confirmation(plugin_dir, deletable_app_container)
+            )
+        #self.myapp_container.controls.append(deletable_app_container)
+        container.controls.append(deletable_app_container)
+        self.myapp_container = container
         self.page.update()
-        # 削除ボタンの追加
-        #delete_button = ft.IconButton(icon=ft.icons.DELETE, on_click=lambda e: self.show_delete_confirmation(plugin_dir, [clickable_image, delete_button]))
-        #self.page.controls.extend([clickable_image, delete_button])
-        #self.page.update()
 
     def show_delete_confirmation(self, plugin_dir, ui_elements) -> None:
 
@@ -92,6 +89,7 @@ class PluginManager:
         print(del_target)
         plugin_dir = del_target[0]
         ui_elements = del_target[1]
+        print(ui_elements)
 
         def on_rm_error(func, path, exc_info) -> None:
             import stat
@@ -108,17 +106,33 @@ class PluginManager:
 
     def load_installed_plugins(self, container: ft.Container) -> None:
         self.myapp_container = container
-        for plugin_name in os.listdir(PLUGIN_FOLDER):
+        target_list = [filename for filename in os.listdir(PLUGIN_FOLDER) if not filename.startswith('.')]
+        for plugin_name in target_list:
+            print(plugin_name)
             plugin_dir = os.path.join(PLUGIN_FOLDER, plugin_name)
             if os.path.isdir(plugin_dir):
                 # プラグインのメタデータを読み込み
                 with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
                     plugin_info = json.load(f)
                 sys.path.append(plugin_dir)
-                # プラグインモジュールを動的にインポート
-                plugin_module = importlib.import_module(plugin_info["main_module"])
-                plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+                # モジュールのファイルパスを指定
+                module_path = os.path.join(plugin_dir, plugin_info["main_module"] + ".py")  # モジュールファイル名に.pyを追加
+                # モジュール仕様を作成
+                spec = importlib.util.spec_from_file_location(plugin_info["plugin_name"], module_path)
+                if spec is not None:
+                    # モジュールオブジェクトを作成
+                    plugin_module = importlib.util.module_from_spec(spec)
+                    print(plugin_module)
+                    # モジュール内のコードを実行
+                    spec.loader.exec_module(plugin_module)
+                    # プラグインクラスを取得
+                    plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+                    print(plugin_class)
+
+                #plugin_module = importlib.import_module(plugin_info["main_module"])
+                #plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
                 plugin_instance = plugin_class(self.__ui_manager) 
+                print(plugin_instance)
                 icon_path = os.path.join(plugin_dir, plugin_info["icon"])
                 with open(icon_path, "rb") as image_file:
                     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -127,17 +141,20 @@ class PluginManager:
                 # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
                 clickable_image = ft.GestureDetector(
                     content=app_icon,
-                    on_tap= lambda _: plugin_instance.load(self.page, self.page_back_func)
+                    on_tap= lambda _, instance=plugin_instance: instance.load(self.page, self.page_back_func)
                 )
                 app_container_cmp = self.__ui_manager.get_component("app_container")
                 app_title = plugin_info["name"]
                 app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff", 5, 5)
                 app_container_widget = app_container_instance.get_widget()
-                deletable_app_container = ft.GestureDetector(
-                    content=app_container_widget,
-                    on_long_press_start= lambda e: self.show_delete_confirmation(plugin_dir, deletable_app_container)
-                )
-                #self.page.add(deletable_app_container)
-                self.myapp_container.controls.append(deletable_app_container)
+                def make_deletable_app_container(plugin_dir, app_container_widget):
+                    return ft.GestureDetector(
+                        content=app_container_widget,
+                        on_long_press_start=lambda e, instance=self, plugin_dir=plugin_dir, container=app_container_widget: instance.show_delete_confirmation(plugin_dir, container)
+                    )
+                deletable_app_container = make_deletable_app_container(plugin_dir, app_container_widget)
+                #self.myapp_container.controls.append(deletable_app_container)
+                container.controls.append(deletable_app_container)
+                self.myapp_container = container
 
         self.page.update()
