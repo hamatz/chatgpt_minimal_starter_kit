@@ -5,7 +5,7 @@ from ui_component_manager import UIComponentManager
 from ui_components.password_dialog import PasswordDialog
 from ui_components.delete_confirm_dialog import DeleteConfirmDialog
 
-class MyBaseApp:
+class CraftForgeBase:
     def __init__(self, page: ft.Page) -> None:
         self.page = page
         self.page.title = "ChatGPT minimal starter kit"
@@ -34,7 +34,7 @@ class MyBaseApp:
         self.show_main_page()
 
 def main(page: ft.Page) -> None:
-    app = MyBaseApp(page)
+    app = CraftForgeBase(page)
     app.show_main_page()
 
 if __name__ == "__main__":

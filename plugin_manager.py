@@ -6,7 +6,7 @@ import shutil
 import json
 import importlib
 import flet as ft
-
+from plugin_interface import PluginInterface
 from ui_component_manager import UIComponentManager
 
 PLUGIN_FOLDER = "installed_plugins"
@@ -57,7 +57,6 @@ class PluginManager:
             content=app_icon,
             on_tap= lambda _: plugin_instance.load(self.page, self.page_back_func)
         )
-        #app_icon.on_click = lambda e: plugin_module.build_ui(self.page)
         # 削除ボタンの追加
         delete_button = ft.IconButton(icon=ft.icons.DELETE, on_click=lambda e: self.show_delete_confirmation(plugin_dir, [clickable_image, delete_button]))
         self.page.controls.extend([clickable_image, delete_button])
@@ -78,7 +77,6 @@ class PluginManager:
         self.page.update()
 
     def delete_plugin(self, del_target: list) -> None:
-
         plugin_dir = del_target[0]
         ui_elements = del_target[1]
 
@@ -102,8 +100,6 @@ class PluginManager:
                 # プラグインのメタデータを読み込み
                 with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
                     plugin_info = json.load(f)
-                # アプリケーションのアイコンをUIに追加
-                #icon = ft.File.from_file_path(os.path.join(plugin_dir, plugin_info["icon"]))
                 sys.path.append(plugin_dir)
                 # プラグインモジュールを動的にインポート
                 plugin_module = importlib.import_module(plugin_info["main_module"])
