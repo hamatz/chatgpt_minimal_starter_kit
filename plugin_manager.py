@@ -1,4 +1,5 @@
 import base64
+import uuid
 import zipfile
 import os
 import sys
@@ -17,6 +18,7 @@ class PluginManager:
     def __init__(self, page: ft.Page, page_back, ui_manager: UIComponentManager):
         self.page = page
         self.page_back_func = page_back
+        self.plugin_dict = {}
         self.__ui_manager = ui_manager
         if not os.path.exists(PLUGIN_FOLDER):
             os.makedirs(PLUGIN_FOLDER)
@@ -62,13 +64,15 @@ class PluginManager:
         app_title = plugin_info["name"]
         app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff", 5, 5)
         app_container_widget = app_container_instance.get_widget()
+        unique_key = str(uuid.uuid4())
         deletable_app_container = ft.GestureDetector(
              content=app_container_widget,
-             on_long_press_start= lambda e: self.show_delete_confirmation(plugin_dir, deletable_app_container)
+             on_long_press_start= lambda e: self.show_delete_confirmation(plugin_dir, unique_key)
             )
         #self.myapp_container.controls.append(deletable_app_container)
         container.controls.append(deletable_app_container)
         self.myapp_container = container
+        self.plugin_dict[unique_key] = deletable_app_container
         self.page.update()
 
     def show_delete_confirmation(self, plugin_dir, ui_elements) -> None:
@@ -86,10 +90,11 @@ class PluginManager:
         self.page.update()
 
     def delete_plugin(self, del_target: list) -> None:
+        print("delete_plugin was called!")
         print(del_target)
         plugin_dir = del_target[0]
-        ui_elements = del_target[1]
-        print(ui_elements)
+        unique_key = del_target[1]
+        print(unique_key)
 
         def on_rm_error(func, path, exc_info) -> None:
             import stat
@@ -99,13 +104,24 @@ class PluginManager:
         shutil.rmtree(plugin_dir, onerror=on_rm_error)
         # UIからプラグイン関連の要素を削除
         #for element in ui_elements:
-        self.myapp_container.controls.remove(ui_elements)
+        # print("削除対象の UI 要素:", id(ui_elements), vars(ui_elements))
+        # for i, elem in enumerate(self.myapp_container.controls):
+        #     print(f"リスト内要素 {i}:", id(elem), vars(elem))
+        #self.myapp_container.controls.remove(ui_elements)
+        # 辞書からウィジェットを削除し、対応する UI 要素も削除
+        if unique_key in self.plugin_dict:
+            ui_element = self.plugin_dict.pop(unique_key)
+            if ui_element in self.myapp_container.controls:
+                self.myapp_container.controls.remove(ui_element)
+            else:
+                print("no ui element which matches unique_key")
         # 削除確認ダイアログを閉じる
         self.page.dialog.open = False
         self.page.update()
 
     def load_installed_plugins(self, container: ft.Container) -> None:
-        self.myapp_container = container
+        self.plugin_dict = {}
+        #self.myapp_container = container
         target_list = [filename for filename in os.listdir(PLUGIN_FOLDER) if not filename.startswith('.')]
         for plugin_name in target_list:
             print(plugin_name)
@@ -147,14 +163,17 @@ class PluginManager:
                 app_title = plugin_info["name"]
                 app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff", 5, 5)
                 app_container_widget = app_container_instance.get_widget()
-                def make_deletable_app_container(plugin_dir, app_container_widget):
+                unique_key = str(uuid.uuid4())
+                def make_deletable_app_container(plugin_dir, unique_key):
                     return ft.GestureDetector(
                         content=app_container_widget,
-                        on_long_press_start=lambda e, instance=self, plugin_dir=plugin_dir, container=app_container_widget: instance.show_delete_confirmation(plugin_dir, container)
+                        on_long_press_start=lambda e, plugin_dir=plugin_dir, app_container=unique_key: self.show_delete_confirmation(plugin_dir, app_container)
                     )
-                deletable_app_container = make_deletable_app_container(plugin_dir, app_container_widget)
+                deletable_app_container = make_deletable_app_container(plugin_dir, unique_key)
                 #self.myapp_container.controls.append(deletable_app_container)
+                self.plugin_dict[unique_key] = deletable_app_container
                 container.controls.append(deletable_app_container)
-                self.myapp_container = container
-
+                print(container.controls)
+                
+        self.myapp_container = container
         self.page.update()
