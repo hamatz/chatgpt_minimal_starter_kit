@@ -1,4 +1,11 @@
 <a name="readme-top"></a>
+
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
+
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -36,3 +43,18 @@ Use the `BLANK_README.md` to get started.
 ### Built With
 
 Flet : https://flet.dev/
+
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/hamatz/chatgpt_minimal_starter_kit.svg?style=for-the-badge
+[contributors-url]: https://github.com/hamatz/chatgpt_minimal_starter_kit/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/hamatz/chatgpt_minimal_starter_kit.svg?style=for-the-badge
+[forks-url]: https://github.com/hamatz/chatgpt_minimal_starter_kit/network/members
+[stars-shield]: https://img.shields.io/github/stars/hamatz/chatgpt_minimal_starter_kit.svg?style=for-the-badge
+[stars-url]: https://github.com/hamatz/chatgpt_minimal_starter_kit/stargazers
+[issues-shield]: https://img.shields.io/github/issues/hamatz/chatgpt_minimal_starter_kit.svg?style=for-the-badge
+[issues-url]: https://github.com/hamatz/chatgpt_minimal_starter_kit/issues
+[license-shield]: https://img.shields.io/github/license/hamatz/chatgpt_minimal_starter_kit.svg?style=for-the-badge
+[license-url]: https://github.com/hamatz/chatgpt_minimal_starter_kit/blob/master/LICENSE.txt
