@@ -42,10 +42,9 @@ CraftForgeは、開発者と非開発者双方に対し、カスタマイズ可�
 
 5. **コラボレーションとコミュニティの促進**：CraftForgeのプラットフォームは、ユーザが独自のプラグインを共有し、他のユーザの作品から学び、互いに協力するコミュニティを育成します。このようなオープンソースのエコシステムは、イノベーションを加速し、多様なアイデアの交流を促します。
 
-:::note warn
-ご注意ください 
-本プロジェクトはまだ初期ステージであり、自由にご活用いただくにはもう少しお時間が必要となっておりますので、しばらくお待ちいただけますと幸いです 
-:::
+> [!NOTE]  
+>本プロジェクトはまだ初期ステージであり、自由にご活用いただくにはもう少しお時間が必要となっておりますので、しばらくお待ちいただけますと幸いです 
+
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -54,7 +53,7 @@ CraftForgeは、開発者と非開発者双方に対し、カスタマイズ可�
 ### Built With
 
 <a href="https://flet.dev/">
-<img src="images/flet_logo.png" alt="Flet_Logo">
+<img src="doc/imag/flet_logo.png" alt="Flet_Logo">
 </a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
