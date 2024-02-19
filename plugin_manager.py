@@ -69,20 +69,19 @@ class PluginManager:
              content=app_container_widget,
              on_long_press_start= lambda e: self.show_delete_confirmation(plugin_dir, unique_key)
             )
-        #self.myapp_container.controls.append(deletable_app_container)
         container.controls.append(deletable_app_container)
         self.myapp_container = container
         self.plugin_dict[unique_key] = deletable_app_container
         self.page.update()
 
-    def show_delete_confirmation(self, plugin_dir, ui_elements) -> None:
+    def show_delete_confirmation(self, plugin_dir, unique_key) -> None:
 
         def close_dlg(e) -> None:
             self.page.dialog.open = False
             self.page.update()
 
         dlg_component = self.__ui_manager.get_component("delete_confirm_daialog")
-        delete_target = [plugin_dir, ui_elements]
+        delete_target = [plugin_dir, unique_key]
         dlg_modal = dlg_component("プラグインの削除", "このプラグインを削除してもよろしいですか？", "いいえ", "はい", close_dlg, self.delete_plugin, delete_target)
 
         self.page.dialog = dlg_modal.get_widget()
@@ -103,12 +102,6 @@ class PluginManager:
         # プラグインディレクトリを削除
         shutil.rmtree(plugin_dir, onerror=on_rm_error)
         # UIからプラグイン関連の要素を削除
-        #for element in ui_elements:
-        # print("削除対象の UI 要素:", id(ui_elements), vars(ui_elements))
-        # for i, elem in enumerate(self.myapp_container.controls):
-        #     print(f"リスト内要素 {i}:", id(elem), vars(elem))
-        #self.myapp_container.controls.remove(ui_elements)
-        # 辞書からウィジェットを削除し、対応する UI 要素も削除
         if unique_key in self.plugin_dict:
             ui_element = self.plugin_dict.pop(unique_key)
             if ui_element in self.myapp_container.controls:
@@ -145,8 +138,6 @@ class PluginManager:
                     plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
                     print(plugin_class)
 
-                #plugin_module = importlib.import_module(plugin_info["main_module"])
-                #plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
                 plugin_instance = plugin_class(self.__ui_manager) 
                 print(plugin_instance)
                 icon_path = os.path.join(plugin_dir, plugin_info["icon"])
@@ -170,7 +161,6 @@ class PluginManager:
                         on_long_press_start=lambda e, plugin_dir=plugin_dir, app_container=unique_key: self.show_delete_confirmation(plugin_dir, app_container)
                     )
                 deletable_app_container = make_deletable_app_container(plugin_dir, unique_key)
-                #self.myapp_container.controls.append(deletable_app_container)
                 self.plugin_dict[unique_key] = deletable_app_container
                 container.controls.append(deletable_app_container)
                 print(container.controls)

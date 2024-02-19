@@ -78,7 +78,7 @@ class MyKeyManager:
             self.__page.update()
 
         dlg_component = self.__ui_manager.get_component("password_daialog")
-        dlg_modal = dlg_component("パスワードの入力をお願いします", "Your Password", textbox_changed, "入力完了", close_dlg)
+        dlg_modal = dlg_component("起動用パスワードの入力をお願いします", "Your Password", textbox_changed, "入力完了", close_dlg)
 
         def open_dlg_modal():
             self.__page.dialog = dlg_modal.get_widget()
