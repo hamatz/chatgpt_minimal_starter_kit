@@ -8,22 +8,28 @@ import json
 import importlib
 import flet as ft
 from plugin_interface import PluginInterface
+from system_plugin_interface import SystemPluginInterface
 from ui_component_manager import UIComponentManager
+from my_key_manager import MyKeyManager
 
 PLUGIN_FOLDER = "installed_plugins"
+SYSTEM_PLUGIN_FOLDER = "system"
 TEMP_WORK_FOLDER = "temp"
 
 class PluginManager:
 
-    def __init__(self, page: ft.Page, page_back, ui_manager: UIComponentManager):
+    def __init__(self, page: ft.Page, page_back, ui_manager: UIComponentManager, key_manager: MyKeyManager):
         self.page = page
         self.page_back_func = page_back
         self.plugin_dict = {}
         self.__ui_manager = ui_manager
+        self.__system_key_manager = key_manager
         if not os.path.exists(PLUGIN_FOLDER):
             os.makedirs(PLUGIN_FOLDER)
         if not os.path.exists(TEMP_WORK_FOLDER):
             os.makedirs(TEMP_WORK_FOLDER)
+        if not os.path.exists(SYSTEM_PLUGIN_FOLDER):
+            os.makedirs(SYSTEM_PLUGIN_FOLDER)
 
     def install_plugin(self, e: ft.FilePickerResultEvent, container: ft.Container) -> None:
         # プラグインを保存する一意のディレクトリを作成
@@ -163,7 +169,41 @@ class PluginManager:
                 deletable_app_container = make_deletable_app_container(plugin_dir, unique_key)
                 self.plugin_dict[unique_key] = deletable_app_container
                 container.controls.append(deletable_app_container)
-                print(container.controls)
+                #print(container.controls)
                 
         self.myapp_container = container
         self.page.update()
+    
+    def load_system_plugins(self, container: ft.Container) -> None:
+        target_list = [filename for filename in os.listdir(SYSTEM_PLUGIN_FOLDER) if not filename.startswith('.')]
+        for plugin_name in target_list:
+            print(plugin_name)
+            plugin_dir = os.path.join(SYSTEM_PLUGIN_FOLDER, plugin_name)
+            if os.path.isdir(plugin_dir):
+                # プラグインのメタデータを読み込み
+                with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
+                    plugin_info = json.load(f)
+                sys.path.append(plugin_dir)
+                module_path = os.path.join(plugin_dir, plugin_info["main_module"] + ".py")
+                spec = importlib.util.spec_from_file_location(plugin_info["plugin_name"], module_path)
+                if spec is not None:
+                    plugin_module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(plugin_module)
+                    plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+                plugin_instance = plugin_class(self.__ui_manager, self.__system_key_manager) 
+                icon_path = os.path.join(plugin_dir, plugin_info["icon"])
+                with open(icon_path, "rb") as image_file:
+                    encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+                app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
+                clickable_image = ft.GestureDetector(
+                    content=app_icon,
+                    on_tap= lambda _, instance=plugin_instance: instance.load(self.page, self.page_back_func)
+                )
+                app_container_cmp = self.__ui_manager.get_component("app_container")
+                app_title = plugin_info["name"]
+                app_container_instance = app_container_cmp(app_title, clickable_image, "#657564")
+                app_container_widget = app_container_instance.get_widget()
+                container.controls.append(app_container_widget)
+                
+        self.myapp_container = container
+        self.page.update()       

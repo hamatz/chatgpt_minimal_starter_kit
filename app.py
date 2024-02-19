@@ -20,7 +20,7 @@ class CraftForgeBase:
         self.ui_manager.add_component("simple_footer", SimpleFooter)
         self.ui_manager.add_component("app_container", AppContainer)
         self.mkm = MyKeyManager(self.page, self.ui_manager)
-        self.pm = PluginManager(self.page, self.page_back, self.ui_manager)
+        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.mkm)
         self.mkm.load_my_key()
 
     def show_main_page(self) -> None:
@@ -44,6 +44,7 @@ class CraftForgeBase:
         )
         self.page.add(main_container)
         self.pm.load_installed_plugins(main_container)
+        self.pm.load_system_plugins(main_container)
         # プラグインをインストールするボタンを表示する
         file_picker = ft.FilePicker(on_result=pick_file_and_install)
         self.page.overlay.append(file_picker)
