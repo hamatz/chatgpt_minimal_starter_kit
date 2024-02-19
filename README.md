@@ -53,7 +53,7 @@ CraftForgeは、開発者と非開発者双方に対し、カスタマイズ可�
 ### Built With
 
 <a href="https://flet.dev/">
-<img src="doc/imag/flet_logo.png" alt="Flet_Logo">
+<img src="doc/img/flet_logo.png" alt="Flet_Logo">
 </a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
