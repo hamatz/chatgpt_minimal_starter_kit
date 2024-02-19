@@ -28,7 +28,7 @@ class CraftForgeBase:
             self.pm.install_plugin(e, main_container)
 
         my_header_cmp = self.ui_manager.get_component("simple_header")
-        my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.0.1", "#20b2aa", 5, 5)
+        my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.0.1", "#20b2aa")
         my_header_widget = my_header_instance.get_widget()
         my_footer_cmp = self.ui_manager.get_component("simple_footer")
         my_footer_instance = my_footer_cmp("@hamatz", "#20b2aa", 5, 5)
@@ -42,20 +42,13 @@ class CraftForgeBase:
             spacing=5,
             run_spacing=5,
         )
-        # main_container = ft.ListView(
-        #     expand=True,
-        #     spacing=10,
-        #     auto_scroll=True,
-        # )
         self.page.add(main_container)
         self.pm.load_installed_plugins(main_container)
         # プラグインをインストールするボタンを表示する
         file_picker = ft.FilePicker(on_result=pick_file_and_install)
         self.page.overlay.append(file_picker)
         install_button = ft.ElevatedButton("Install Plugin", icon=ft.icons.UPLOAD_FILE, on_click=lambda _:file_picker.pick_files())
-        #self.page.add(install_button)
         self.page.add(install_button, my_footer_widget)
-        #self.page.add(my_footer_widget)
         self.page.update()
 
     def page_back(self) -> None:
