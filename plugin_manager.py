@@ -180,7 +180,6 @@ class PluginManager:
             print(plugin_name)
             plugin_dir = os.path.join(SYSTEM_PLUGIN_FOLDER, plugin_name)
             if os.path.isdir(plugin_dir):
-                # プラグインのメタデータを読み込み
                 with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
                     plugin_info = json.load(f)
                 sys.path.append(plugin_dir)
@@ -190,20 +189,21 @@ class PluginManager:
                     plugin_module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(plugin_module)
                     plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
-                plugin_instance = plugin_class(self.__ui_manager, self.__system_key_manager) 
+                #システム権限があるプラグインはシステム鍵が使えるようになる
+                system_plugin_instance = plugin_class(self.__ui_manager, self.__system_key_manager) 
                 icon_path = os.path.join(plugin_dir, plugin_info["icon"])
                 with open(icon_path, "rb") as image_file:
                     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
                 app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
                 clickable_image = ft.GestureDetector(
                     content=app_icon,
-                    on_tap= lambda _, instance=plugin_instance: instance.load(self.page, self.page_back_func)
+                    on_tap= lambda _, instance=system_plugin_instance: instance.load(self.page, self.page_back_func)
                 )
-                app_container_cmp = self.__ui_manager.get_component("app_container")
+                system_app_container_cmp = self.__ui_manager.get_component("app_container")
                 app_title = plugin_info["name"]
-                app_container_instance = app_container_cmp(app_title, clickable_image, "#657564")
-                app_container_widget = app_container_instance.get_widget()
-                container.controls.append(app_container_widget)
+                system_app_container_instance = system_app_container_cmp(app_title, clickable_image, "#657564")
+                system_app_container_widget = system_app_container_instance.get_widget()
+                container.controls.append(system_app_container_widget)
                 
         self.myapp_container = container
         self.page.update()       

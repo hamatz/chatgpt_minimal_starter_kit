@@ -2,6 +2,7 @@ import flet as ft
 from plugin_manager import PluginManager
 from my_key_manager import MyKeyManager
 from ui_component_manager import UIComponentManager
+from system_file_controller import SystemFileController
 from ui_components.password_dialog import PasswordDialog
 from ui_components.delete_confirm_dialog import DeleteConfirmDialog
 from ui_components.simple_header import SimpleHeader
@@ -14,6 +15,7 @@ class CraftForgeBase:
         self.page.title = "ChatGPT minimal starter kit"
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.ui_manager = UIComponentManager()
+        self.system_fc = SystemFileController()
         self.ui_manager.add_component("password_daialog", PasswordDialog)
         self.ui_manager.add_component("delete_confirm_daialog", DeleteConfirmDialog)
         self.ui_manager.add_component("simple_header", SimpleHeader)
@@ -58,6 +60,7 @@ class CraftForgeBase:
 
 def main(page: ft.Page) -> None:
     app = CraftForgeBase(page)
+    app.system_fc.save_text_data("CraftForgeBase", "app_version", "0.1.0")
     app.show_main_page()
 
 if __name__ == "__main__":

@@ -9,3 +9,4 @@ temp/*.*
 installed_plugins/
 
 my_app_info.json
+system_shared_data.json
