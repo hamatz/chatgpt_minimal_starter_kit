@@ -62,7 +62,7 @@ class PluginManager:
         )
         app_container_cmp = self.__ui_manager.get_component("app_container")
         app_title = plugin_info["name"]
-        app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff", 5, 5)
+        app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff")
         app_container_widget = app_container_instance.get_widget()
         unique_key = str(uuid.uuid4())
         deletable_app_container = ft.GestureDetector(
@@ -152,7 +152,7 @@ class PluginManager:
                 )
                 app_container_cmp = self.__ui_manager.get_component("app_container")
                 app_title = plugin_info["name"]
-                app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff", 5, 5)
+                app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff")
                 app_container_widget = app_container_instance.get_widget()
                 unique_key = str(uuid.uuid4())
                 def make_deletable_app_container(plugin_dir, unique_key):
