@@ -31,7 +31,7 @@ class CraftForgeBase:
         my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.0.1", "#20b2aa")
         my_header_widget = my_header_instance.get_widget()
         my_footer_cmp = self.ui_manager.get_component("simple_footer")
-        my_footer_instance = my_footer_cmp("@hamatz", "#20b2aa", 5, 5)
+        my_footer_instance = my_footer_cmp("@hamatz", "#20b2aa")
         my_footer_widget = my_footer_instance.get_widget()
         self.page.add(my_header_widget)
         main_container = ft.GridView(
