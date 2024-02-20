@@ -22,7 +22,7 @@ class CraftForgeBase:
         self.ui_manager.add_component("simple_footer", SimpleFooter)
         self.ui_manager.add_component("app_container", AppContainer)
         self.mkm = MyKeyManager(self.page, self.ui_manager)
-        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.mkm)
+        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.mkm, self.system_fc)
         self.mkm.load_my_key()
 
     def show_main_page(self) -> None:

@@ -2,8 +2,14 @@ import flet as ft
 from plugin_interface import PluginInterface
 
 class SamplePlugin(PluginInterface):
-    # def __init__(self, ui_manager):
-    #     self.ui_manager = ui_manager
+    _instance = None
+    
+    def __new__(cls, ui_manager):
+        if cls._instance is None:
+            cls._instance = super(SamplePlugin, cls).__new__(cls)
+            # 新しいインスタンスの初期化
+            cls._instance.ui_manager = ui_manager
+        return cls._instance
 
     def load(self, page: ft.Page, function_to_top_page):
         my_header_cmp = self.ui_manager.get_component("simple_header")

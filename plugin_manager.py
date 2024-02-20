@@ -11,6 +11,7 @@ from plugin_interface import PluginInterface
 from system_plugin_interface import SystemPluginInterface
 from ui_component_manager import UIComponentManager
 from my_key_manager import MyKeyManager
+from system_file_controller import SystemFileController
 
 PLUGIN_FOLDER = "installed_plugins"
 SYSTEM_PLUGIN_FOLDER = "system"
@@ -18,12 +19,13 @@ TEMP_WORK_FOLDER = "temp"
 
 class PluginManager:
 
-    def __init__(self, page: ft.Page, page_back, ui_manager: UIComponentManager, key_manager: MyKeyManager):
+    def __init__(self, page: ft.Page, page_back, ui_manager: UIComponentManager, key_manager: MyKeyManager, system_fc: SystemFileController):
         self.page = page
         self.page_back_func = page_back
         self.plugin_dict = {}
         self.__ui_manager = ui_manager
         self.__system_key_manager = key_manager
+        self.__system_fc = system_fc
         if not os.path.exists(PLUGIN_FOLDER):
             os.makedirs(PLUGIN_FOLDER)
         if not os.path.exists(TEMP_WORK_FOLDER):
@@ -189,8 +191,8 @@ class PluginManager:
                     plugin_module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(plugin_module)
                     plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
-                #システム権限があるプラグインはシステム鍵が使えるようになる
-                system_plugin_instance = plugin_class(self.__ui_manager, self.__system_key_manager) 
+                #システム権限があるプラグインはシステム鍵とシステム共通のファイルが使えるようになる
+                system_plugin_instance = plugin_class(self.__ui_manager, self.__system_key_manager, self.__system_fc) 
                 icon_path = os.path.join(plugin_dir, plugin_info["icon"])
                 with open(icon_path, "rb") as image_file:
                     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
