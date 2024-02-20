@@ -3,9 +3,11 @@ from plugin_manager import PluginManager
 from my_key_manager import MyKeyManager
 from ui_component_manager import UIComponentManager
 from system_file_controller import SystemFileController
+from system_api_layer import SystemAPI
 from ui_components.password_dialog import PasswordDialog
 from ui_components.delete_confirm_dialog import DeleteConfirmDialog
 from ui_components.simple_header import SimpleHeader
+from ui_components.simple_header_2 import SimpleHeader2
 from ui_components.simple_footer import SimpleFooter
 from ui_components.app_container import AppContainer
 
@@ -15,14 +17,16 @@ class CraftForgeBase:
         self.page.title = "ChatGPT minimal starter kit"
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.ui_manager = UIComponentManager()
-        self.system_fc = SystemFileController()
         self.ui_manager.add_component("password_daialog", PasswordDialog)
         self.ui_manager.add_component("delete_confirm_daialog", DeleteConfirmDialog)
         self.ui_manager.add_component("simple_header", SimpleHeader)
+        self.ui_manager.add_component("simple_header2", SimpleHeader2)
         self.ui_manager.add_component("simple_footer", SimpleFooter)
         self.ui_manager.add_component("app_container", AppContainer)
         self.mkm = MyKeyManager(self.page, self.ui_manager)
-        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.mkm, self.system_fc)
+        self.system_fc = SystemFileController()
+        self.system_api = SystemAPI(self.mkm, self.system_fc)
+        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api)
         self.mkm.load_my_key()
 
     def show_main_page(self) -> None:
