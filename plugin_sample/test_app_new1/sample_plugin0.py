@@ -11,7 +11,7 @@ class SamplePlugin(PluginInterface):
             cls._instance.ui_manager = ui_manager
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
         my_header_cmp = self.ui_manager.get_component("simple_header")
         my_header_instance = my_header_cmp(ft.icons.TABLE_RESTAURANT, "Sample Plugin v.0.0.1", "#20b2aa")
         my_header_widget = my_header_instance.get_widget()

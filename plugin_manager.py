@@ -66,7 +66,7 @@ class PluginManager:
         # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
         clickable_image = ft.GestureDetector(
             content=app_icon,
-            on_tap= lambda _, instance=plugin_instance: instance.load(self.page, self.page_back_func)
+            on_tap= lambda _, instance=plugin_instance, extract_dir=extract_dir: instance.load(self.page, self.page_back_func, extract_dir)
         )
         app_container_cmp = self.__ui_manager.get_component("app_container")
         app_title = plugin_info["name"]
@@ -156,7 +156,7 @@ class PluginManager:
                 # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
                 clickable_image = ft.GestureDetector(
                     content=app_icon,
-                    on_tap= lambda _, instance=plugin_instance: instance.load(self.page, self.page_back_func)
+                    on_tap= lambda _, instance=plugin_instance, plugin_dir=plugin_dir: instance.load(self.page, self.page_back_func, plugin_dir)
                 )
                 app_container_cmp = self.__ui_manager.get_component("app_container")
                 app_title = plugin_info["name"]
@@ -199,7 +199,7 @@ class PluginManager:
                 app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
                 clickable_image = ft.GestureDetector(
                     content=app_icon,
-                    on_tap= lambda _, instance=system_plugin_instance: instance.load(self.page, self.page_back_func)
+                    on_tap= lambda _, instance=system_plugin_instance, plugin_dir=plugin_dir: instance.load(self.page, self.page_back_func, plugin_dir)
                 )
                 system_app_container_cmp = self.__ui_manager.get_component("app_container")
                 app_title = plugin_info["name"]
