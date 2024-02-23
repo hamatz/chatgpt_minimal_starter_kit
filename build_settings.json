@@ -5,6 +5,7 @@
     "org_name": "hamatz",
     "company_name": "hamatz personal project",
     "copyright": "hamatz",
+    "module_name":"app.py",
     "build_version": "0.0.1",
     "build_number": "1"
 }
