@@ -1,0 +1,10 @@
+{
+    "folders": [
+      "system",
+      "ui_components"
+    ],
+    "files": [
+      "plugin_interface.py",
+      "system_plugin_interface.py"
+    ]
+}

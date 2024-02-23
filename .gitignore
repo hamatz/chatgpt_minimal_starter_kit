@@ -4,9 +4,10 @@ __pycache__/
 *$py.class
 
 .DS_Store
-work/*.*
-temp/*.*
+work/
+temp/
 installed_plugins/
+assets/
 
 my_app_info.json
 system_shared_data.json
