@@ -1,0 +1,10 @@
+{
+    "project_name": "CraftForge",
+    "description": "Yet Another Application Framework Layer for Proof of Concept",
+    "product_name": "CraftForge",
+    "org_name": "hamatz",
+    "company_name": "hamatz personal project",
+    "copyright": "hamatz",
+    "build_version": "0.0.1",
+    "build_number": "1"
+}
