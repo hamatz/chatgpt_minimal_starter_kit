@@ -8,6 +8,8 @@ work/
 temp/
 installed_plugins/
 assets/
+build/
+dist/
 
 my_app_info.json
 system_shared_data.json
