@@ -1,7 +1,6 @@
 import json
 import os
 
-
 class SystemFileController:
     def __init__(self, system_filename: str):
         self.system_filename = system_filename

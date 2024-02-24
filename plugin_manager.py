@@ -7,6 +7,7 @@ import shutil
 import json
 import importlib
 import flet as ft
+from typing import Callable
 from plugin_interface import PluginInterface
 from system_plugin_interface import SystemPluginInterface
 from ui_component_manager import UIComponentManager
@@ -18,7 +19,7 @@ TEMP_WORK_FOLDER = "temp"
 
 class PluginManager:
 
-    def __init__(self, page: ft.Page, page_back, ui_manager: UIComponentManager, system_api: SystemAPI):
+    def __init__(self, page: ft.Page, page_back : Callable[[], None], ui_manager: UIComponentManager, system_api: SystemAPI):
         self.page = page
         self.page_back_func = page_back
         self.plugin_dict = {}

@@ -38,6 +38,11 @@ class CraftForgeBase:
         def pick_file_and_install(e: ft.FilePickerResultEvent):
             self.pm.install_plugin(e, main_container)
 
+        self.page.appbase_toast =  ft.SnackBar(
+            content=ft.Text("appbase_toast"),
+            action="Alright!",
+        )
+
         my_header_cmp = self.ui_manager.get_component("simple_header")
         my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.0.1", "#20b2aa")
         my_header_widget = my_header_instance.get_widget()

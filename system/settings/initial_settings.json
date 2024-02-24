@@ -1,0 +1,29 @@
+{
+    "OpenAI_Token": {
+        "api_key": "",
+        "description": "OpenAIのAPIアクセス用のトークン（暗号化対象）"
+    },
+    "GPT_model_name": {
+        "model_name": "",
+        "description": "GPTで利用するモデル名（暗号化対象外）"
+    },
+    "Azure_Token":{
+            "api_key" : "",
+            "description": "Azure OpenAIのAPIアクセス用のトークン（暗号化対象）"
+    },
+    "Azure_base_url" :
+    {
+        "api_base_url" : "",
+        "description": "Azure OpenAIアクセス用のベースURL（暗号化対象）"
+    },
+    "Azure_API_Version" :
+    {
+        "api_version" : "",
+        "description": "Azure OpenAIアクセス用のAPI Version（暗号化対象外）"
+    },
+    "Azure_Deployment_name": 
+    {
+        "deployment_name" : "",
+        "description": "Azure OpenAIアクセスで利用するGPTモデルのデプロイメント名（暗号化対象外）"
+    }
+}

@@ -17,7 +17,11 @@ class SystemAPI:
     def load_system_dict(self, app_name: str, prop_name: str) -> dict:
         """指定されたアプリケーション名とプロパティ名から辞書データを読み込みます。"""
         data = self.__sys_file_ctrl.load_system_dict(app_name, prop_name)
-        return data if data is not None else {}
+        return data
+
+    def delete_system_data(self, app_name: str, target_prop_name: str) -> bool:
+        item = self.__sys_file_ctrl.delete_system_data(app_name, target_prop_name)
+        return item if item is not True else False
 
     def encrypt_system_data(self, target: str) -> str:
         """指定されたテキストデータを暗号化します。"""
