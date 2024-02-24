@@ -11,5 +11,7 @@ assets/
 build/
 dist/
 
+*.spec
+*.python-version
 my_app_info.json
 system_shared_data.json

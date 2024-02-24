@@ -11,6 +11,10 @@ from ui_components.simple_header_2 import SimpleHeader2
 from ui_components.simple_footer import SimpleFooter
 from ui_components.app_container import AppContainer
 
+MY_SYSTEM_NAME = "CraftForgeBase"
+VERSION = "0.1.0"
+BUILD_NUMBER = "1"
+
 class CraftForgeBase:
     def __init__(self, page: ft.Page) -> None:
         self.page = page
@@ -51,7 +55,6 @@ class CraftForgeBase:
         self.page.add(main_container)
         self.pm.load_installed_plugins(main_container)
         self.pm.load_system_plugins(main_container)
-        # プラグインをインストールするボタンを表示する
         file_picker = ft.FilePicker(on_result=pick_file_and_install)
         self.page.overlay.append(file_picker)
         install_button = ft.ElevatedButton("Install Plugin", icon=ft.icons.UPLOAD_FILE, on_click=lambda _:file_picker.pick_files())
@@ -62,9 +65,12 @@ class CraftForgeBase:
         self.page.clean()
         self.show_main_page()
 
+
 def main(page: ft.Page) -> None:
     app = CraftForgeBase(page)
-    app.system_fc.save_text_data("CraftForgeBase", "app_version", "0.1.0")
+    app.system_fc.save_system_dict(MY_SYSTEM_NAME, "app_info",
+                                    {"version" : VERSION, 
+                                     "build_number" : BUILD_NUMBER})
     app.show_main_page()
 
 if __name__ == "__main__":
