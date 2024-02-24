@@ -1,7 +1,6 @@
 import json
 import os
 
-SYSTEM_FILENAME = "system_shared_data.json"
 
 class SystemFileController:
     def __init__(self, system_filename: str):

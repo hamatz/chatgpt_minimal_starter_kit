@@ -12,6 +12,7 @@ from ui_components.simple_footer import SimpleFooter
 from ui_components.app_container import AppContainer
 
 MY_SYSTEM_NAME = "CraftForgeBase"
+SYSTEM_FILENAME = "system_shared_data.json"
 VERSION = "0.1.0"
 BUILD_NUMBER = "1"
 
@@ -28,7 +29,7 @@ class CraftForgeBase:
         self.ui_manager.add_component("simple_footer", SimpleFooter)
         self.ui_manager.add_component("app_container", AppContainer)
         self.mkm = MyKeyManager(self.page, self.ui_manager)
-        self.system_fc = SystemFileController()
+        self.system_fc = SystemFileController(SYSTEM_FILENAME)
         self.system_api = SystemAPI(self.mkm, self.system_fc)
         self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api)
         self.mkm.load_my_key()
