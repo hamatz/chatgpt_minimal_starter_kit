@@ -34,7 +34,6 @@ class MyKeyManager:
     def __generate_my_key(self, user_input: str) -> None:
         password = user_input.encode()
         self.__my_pass_phrase = str(uuid.uuid4())
-        print(self.__my_pass_phrase)
 
         salt = os.urandom(16) 
         kdf = PBKDF2HMAC(
@@ -112,7 +111,6 @@ class MyKeyManager:
                 check_result = self.__compare_key_and_hash(decrypted_pass_phrase_str, content_key_hash)
                 if check_result:
                     self.__my_pass_phrase = decrypted_pass_phrase.decode()
-                    print(self.__my_pass_phrase)
                     print("app key was successfully decrypted")
                     return True
                 else:
