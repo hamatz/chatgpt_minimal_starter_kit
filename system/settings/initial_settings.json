@@ -1,29 +1,89 @@
 {
     "OpenAI_Token": {
-        "api_key": "",
-        "description": "OpenAIのAPIアクセス用のトークン（暗号化対象）"
+        "api_key": {
+            "value": "",
+            "ui_type": "text"
+        },
+        "description": {
+            "value": "OpenAIのAPIアクセス用のトークン",
+            "ui_type": "text"
+        },
+        "is_encrypted": {
+            "value": true,
+            "ui_type": "toggle"
+        }
     },
     "GPT_model_name": {
-        "model_name": "",
-        "description": "GPTで利用するモデル名（暗号化対象外）"
+        "model_name": {
+            "value": "",
+            "ui_type": "text"
+        },
+        "description": {
+            "value": "OpenAI APIで利用するGPTモデル名",
+            "ui_type": "text"
+        },
+        "is_encrypted": {
+            "value": true,
+            "ui_type": "toggle"
+        }
     },
     "Azure_Token":{
-            "api_key" : "",
-            "description": "Azure OpenAIのAPIアクセス用のトークン（暗号化対象）"
+        "api_key": {
+            "value": "",
+            "ui_type": "text"
+        },
+        "description": {
+            "value": "Azure OpenAIのAPIアクセス用のトークン",
+            "ui_type": "text"
+        },
+        "is_encrypted": {
+            "value": true,
+            "ui_type": "toggle"
+        }
     },
     "Azure_base_url" :
     {
-        "api_base_url" : "",
-        "description": "Azure OpenAIアクセス用のベースURL（暗号化対象）"
+        "api_base_url": {
+            "value": "",
+            "ui_type": "text"
+        },
+        "description": {
+            "value": "Azure OpenAIアクセス用のベースURL",
+            "ui_type": "text"
+        },
+        "is_encrypted": {
+            "value": true,
+            "ui_type": "toggle"
+        }
     },
     "Azure_API_Version" :
     {
-        "api_version" : "",
-        "description": "Azure OpenAIアクセス用のAPI Version（暗号化対象外）"
+        "api_version": {
+            "value": "",
+            "ui_type": "text"
+        },
+        "description": {
+            "value": "Azure OpenAIアクセス用のAPI Version",
+            "ui_type": "text"
+        },
+        "is_encrypted": {
+            "value": false,
+            "ui_type": "toggle"
+        }
     },
     "Azure_Deployment_name": 
     {
-        "deployment_name" : "",
-        "description": "Azure OpenAIアクセスで利用するGPTモデルのデプロイメント名（暗号化対象外）"
+        "deployment_name": {
+            "value": "",
+            "ui_type": "text"
+        },
+        "description": {
+            "value": "Azure OpenAIアクセスで利用するGPTモデルのデプロイメント名",
+            "ui_type": "text"
+        },
+        "is_encrypted": {
+            "value": false,
+            "ui_type": "toggle"
+        }
     }
 }

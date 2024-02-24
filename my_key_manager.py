@@ -111,7 +111,8 @@ class MyKeyManager:
                 decrypted_pass_phrase_str = decrypted_pass_phrase
                 check_result = self.__compare_key_and_hash(decrypted_pass_phrase_str, content_key_hash)
                 if check_result:
-                    self.__my_pass_phrase = decrypted_pass_phrase
+                    self.__my_pass_phrase = decrypted_pass_phrase.decode()
+                    print(self.__my_pass_phrase)
                     print("app key was successfully decrypted")
                     return True
                 else:

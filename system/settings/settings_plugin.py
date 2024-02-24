@@ -42,48 +42,48 @@ class SettingsPlugin(SystemPluginInterface):
         my_header_widget = my_header_instance.get_widget()
         page.add(my_header_widget)
 
-        def show_delete_confirmation(e: ft.ControlEvent, panel: ft.ExpansionPanelList, target_title: str) -> None:
-
-            def close_dlg(e) -> None:
-                self.page.dialog.open = False
-                self.page.update()
-
-            dlg_component = self.__ui_manager.get_component("delete_confirm_daialog")
-            delete_target = [panel, target_title]
-            dlg_modal = dlg_component(target_title, "設定情報を削除します。よろしいですか？", "いいえ", "はい", close_dlg, handle_delete, delete_target)
-
-            self.page.dialog = dlg_modal.get_widget()
-            self.page.dialog.open = True
-            self.page.update()
-
-        def handle_delete(e: ft.ControlEvent, target: list):
-            target_panel = self.settings_info_dict[target[0]]
-            target_item_title = self.settings_info_dict[target[1]]
-            result = self.system_api.delete_system_data(MY_APP_NAME, target_item_title)
-            if result:
-                target_panel.controls.remove(e.control.data)
-                load_system_info()
-                page.update()
+        def change_edit_mode(e: ft.ControlEvent, tile: ft.ListTile) -> None:
+            tile.title.disabled = not tile.title.disabled  # テキストフィールドのdisabled属性を反転
+            if tile.title.disabled:
+                tile.trailing.icon = ft.icons.EDIT  # 編集不可状態なら編集アイコンに
             else:
-                self.show_toast(e, page, "削除処理に失敗しました")
+                tile.trailing.icon = ft.icons.SAVE  # 編集可能状態なら保存アイコンに
+            page.update()
+
+        def save_data(e, tile, service_name: str, prop_name: str,  is_secure: bool):
+            settings_info_dict = self.settings_info_dict.copy()
+            target_dict = settings_info_dict.get(service_name, {})
+            edited_data = tile.title.value
+            if is_secure:
+                target_data = self.system_api.encrypt_system_data(edited_data)
+                tile.title.value = target_data  # UI上で暗号化された値を表示する必要があるかどうかを検討
+            else:
+                target_data = edited_data
+            
+            target_dict[prop_name] = {"value": target_data, "ui_type": "text", "is_encrypted": is_secure}
+
+            self.system_api.save_system_dict(MY_APP_NAME, service_name, target_dict)
+            self.settings_info_dict = self.system_api.get_system_dicts_all()
+            change_edit_mode(e, tile)  # 編集モードを切り替えて編集不可状態に戻す
 
         def load_system_info():
             system_data_dict = self.system_api.get_system_dicts_all()
             self.settings_info_dict = system_data_dict.get(MY_APP_NAME, {})
-
             # settings_info_dictが空の場合、初期設定用のJSONデータを読み込む
             if not self.settings_info_dict:
                 json_path = os.path.join(plugin_dir_path, 'initial_settings.json')
                 with open(json_path, 'r', encoding='utf-8') as f:
                     initial_settings = json.load(f)
+                    for service_name, settings in initial_settings.items():
+                        title = service_name
+                        setting_info = settings
+                        self.system_api.save_system_dict(MY_APP_NAME, service_name, setting_info)
                     self.settings_info_dict = initial_settings
 
             my_system_info = system_data_dict.get(MY_SYSTEM_NAME, {}).get("app_info", {})
             my_version = "Version : " + my_system_info.get("version", "不明")
             my_build_num = my_system_info.get("build_number", "不明")
             my_version_info = my_version + " (" + my_build_num + ")"
-            print(my_version_info)
-
             panel = ft.ExpansionPanelList(
                 expand_icon_color=ft.colors.AMBER,
                 elevation=8,
@@ -95,19 +95,27 @@ class SettingsPlugin(SystemPluginInterface):
                 for service_name, settings in self.settings_info_dict.items():
                     title = service_name
                     setting_info = settings
-
-                    # 各設定項目を含むコンテナを作成
                     content_container = ft.Column([])
-                    for prop_name, desc in setting_info.items():
-                        list_tile = ft.ListTile(
-                            title=ft.Text(prop_name),
-                            subtitle=ft.Text(desc),
-                            trailing=ft.IconButton(ft.icons.DELETE, on_click=lambda e, panel=panel, title=title: show_delete_confirmation(e, panel, title)),
-                        )
+                    is_secure_data = settings.get("is_encrypted", {}).get("value", False)
+                    for prop_name, values  in setting_info.items():
+                        ui_type = values.get("ui_type")
+                        is_not_editable = True
+                        #is_secure_data = values.get("is_encrypted", False)
+                        if ui_type == "text":
+                            tmp_title=ft.TextField(label=prop_name, disabled=is_not_editable, value=values.get("value"))
+                            list_tile = ft.ListTile(
+                                title=tmp_title,
+                            )
+                            list_tile.trailing = ft.IconButton(ft.icons.EDIT, on_click=lambda e, tile=list_tile, s_name=service_name, p_name=prop_name,  is_secure=is_secure_data: save_data(e, tile, s_name, p_name, is_secure) if not tile.title.disabled else change_edit_mode(e, tile))
+                        elif ui_type == "toggle":
+                             list_tile = ft.ListTile(
+                                title=ft.Text(prop_name),
+                                subtitle=ft.Switch(label=is_secure_data, value=is_secure_data, disabled=True),
+                            )                           
                         content_container.controls.append(list_tile)
 
                     exp = ft.ExpansionPanel(
-                        bgcolor=ft.colors.BLUE_100,
+                        bgcolor=ft.colors.BLUE_50,
                         header=ft.ListTile(title=ft.Text(title)),
                         content=content_container, 
                     )
