@@ -8,7 +8,6 @@ from typing import Callable
 from ui_component_manager import UIComponentManager
 from system_api_layer import SystemAPI
 
-
 class SettingsPlugin(SystemPluginInterface):
 
     _instance = None
@@ -84,6 +83,17 @@ class SettingsPlugin(SystemPluginInterface):
             my_version = "Version : " + my_system_info.get("version", "不明")
             my_build_num = my_system_info.get("build_number", "不明")
             my_version_info = my_version + " (" + my_build_num + ")"
+
+            app_icon_path = os.path.join(plugin_dir_path, "app_icon.png")
+            with open(app_icon_path, "rb") as app_image_file:
+                encoded_image_string = base64.b64encode(app_image_file.read()).decode("utf-8")
+                my_app_icon = ft.Image(src_base64=encoded_image_string, width=45, height=45,  fit="contain")
+            title_bar = ft.ListTile(
+                leading=my_app_icon,
+                title=ft.Text("CraftForge" + " : " + my_version_info),
+            )
+            page.add(title_bar)
+
             panel = ft.ExpansionPanelList(
                 expand_icon_color=ft.colors.AMBER,
                 elevation=8,
