@@ -59,7 +59,8 @@ class SettingsPlugin(SystemPluginInterface):
             else:
                 target_data = edited_data
             
-            target_dict[prop_name] = {"value": target_data, "ui_type": "text", "ui_type": "description", "is_encrypted": is_secure}
+            ui_type = "description" if prop_name == "description" else "text"
+            target_dict[prop_name] = {"value": target_data, "ui_type": ui_type, "is_encrypted": is_secure}
 
             self.system_api.save_system_dict(MY_APP_NAME, service_name, target_dict)
             self.settings_info_dict = self.system_api.get_system_dicts_all()
