@@ -1,7 +1,6 @@
 import base64
 import json
 import os
-import uuid
 import flet as ft
 from system_plugin_interface import SystemPluginInterface
 from typing import Callable

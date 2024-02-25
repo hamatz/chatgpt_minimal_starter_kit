@@ -2,8 +2,9 @@ import json
 import os
 
 class SystemFileController:
-    def __init__(self, system_filename: str):
-        self.system_filename = system_filename
+    def __init__(self, system_filename: str, base_dir: str):
+        system_file_path = os.path.join(base_dir, system_filename)
+        self.system_filename = system_file_path
         if os.path.isfile(self.system_filename):
             with open(self.system_filename, 'r', encoding='utf-8') as f:
                 self.my_system_file = json.load(f)

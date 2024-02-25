@@ -1,3 +1,5 @@
+import os
+import sys
 import flet as ft
 from plugin_manager import PluginManager
 from my_key_manager import MyKeyManager
@@ -16,6 +18,12 @@ SYSTEM_FILENAME = "system_shared_data.json"
 VERSION = "0.1.0"
 BUILD_NUMBER = "1"
 
+script_path = os.path.abspath(__file__)
+base_dir = os.path.dirname(script_path)
+# もしスクリプトが PyInstaller などで一つの実行ファイルにパッケージされている場合
+if getattr(sys, 'frozen', False):
+    base_dir = os.path.dirname(sys.executable)
+
 class CraftForgeBase:
     def __init__(self, page: ft.Page) -> None:
         self.page = page
@@ -28,10 +36,10 @@ class CraftForgeBase:
         self.ui_manager.add_component("simple_header2", SimpleHeader2)
         self.ui_manager.add_component("simple_footer", SimpleFooter)
         self.ui_manager.add_component("app_container", AppContainer)
-        self.mkm = MyKeyManager(self.page, self.ui_manager)
-        self.system_fc = SystemFileController(SYSTEM_FILENAME)
+        self.mkm = MyKeyManager(self.page, self.ui_manager, base_dir)
+        self.system_fc = SystemFileController(SYSTEM_FILENAME, base_dir)
         self.system_api = SystemAPI(self.mkm, self.system_fc)
-        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api)
+        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir)
         self.mkm.load_my_key()
 
     def show_main_page(self) -> None:

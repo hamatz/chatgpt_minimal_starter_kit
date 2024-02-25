@@ -19,31 +19,33 @@ TEMP_WORK_FOLDER = "temp"
 
 class PluginManager:
 
-    def __init__(self, page: ft.Page, page_back : Callable[[], None], ui_manager: UIComponentManager, system_api: SystemAPI):
+    def __init__(self, page: ft.Page, page_back : Callable[[], None], ui_manager: UIComponentManager, system_api: SystemAPI, base_dir: str):
         self.page = page
         self.page_back_func = page_back
         self.plugin_dict = {}
         self.__ui_manager = ui_manager
         self.__system_api = system_api
-       #self.__system_fc = system_fc
-        if not os.path.exists(PLUGIN_FOLDER):
-            os.makedirs(PLUGIN_FOLDER)
-        if not os.path.exists(TEMP_WORK_FOLDER):
-            os.makedirs(TEMP_WORK_FOLDER)
-        if not os.path.exists(SYSTEM_PLUGIN_FOLDER):
-            os.makedirs(SYSTEM_PLUGIN_FOLDER)
+        self.plugin_folder_path = os.path.join(base_dir, PLUGIN_FOLDER)
+        self.temp_work_folder_path = os.path.join(base_dir, TEMP_WORK_FOLDER)
+        self.system_plugin_folder_path = os.path.join(base_dir, SYSTEM_PLUGIN_FOLDER)
+        if not os.path.exists(self.plugin_folder_path):
+            os.makedirs(self.plugin_folder_path)
+        if not os.path.exists(self.temp_work_folder_path):
+            os.makedirs(self.temp_work_folder_path)
+        if not os.path.exists(self.system_plugin_folder_path):
+            os.makedirs(self.system_plugin_folder_path)
 
     def install_plugin(self, e: ft.FilePickerResultEvent, container: ft.Container) -> None:
         # プラグインを保存する一意のディレクトリを作成
         picked_file = e.files[0]
         picked_file_path = picked_file.path
-        plugin_dir = os.path.join(PLUGIN_FOLDER, picked_file.name[:-4])  # ".zip"拡張子を除去
+        plugin_dir = os.path.join(self.plugin_folder_path, picked_file.name[:-4])  # ".zip"拡張子を除去
         os.makedirs(plugin_dir, exist_ok=True)
         # ZIPファイルを一時ディレクトリに保存
         zip_path = os.path.join("temp", picked_file.name)
         shutil.copy(picked_file_path, zip_path)
         # ZIPファイルを解凍するディレクトリを指定
-        extract_dir = os.path.join(PLUGIN_FOLDER, picked_file.name[:-4])
+        extract_dir = os.path.join(self.plugin_folder_path, picked_file.name[:-4])
         # ZIPファイルを解凍
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(extract_dir)
@@ -123,10 +125,10 @@ class PluginManager:
     def load_installed_plugins(self, container: ft.Container) -> None:
         self.plugin_dict = {}
         #self.myapp_container = container
-        target_list = [filename for filename in os.listdir(PLUGIN_FOLDER) if not filename.startswith('.')]
+        target_list = [filename for filename in os.listdir(self.plugin_folder_path) if not filename.startswith('.')]
         for plugin_name in target_list:
             print(plugin_name)
-            plugin_dir = os.path.join(PLUGIN_FOLDER, plugin_name)
+            plugin_dir = os.path.join(self.plugin_folder_path, plugin_name)
             if os.path.isdir(plugin_dir):
                 # プラグインのメタデータを読み込み
                 with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
@@ -171,16 +173,15 @@ class PluginManager:
                 deletable_app_container = make_deletable_app_container(plugin_dir, unique_key)
                 self.plugin_dict[unique_key] = deletable_app_container
                 container.controls.append(deletable_app_container)
-                #print(container.controls)
                 
         self.myapp_container = container
         self.page.update()
     
     def load_system_plugins(self, container: ft.Container) -> None:
-        target_list = [filename for filename in os.listdir(SYSTEM_PLUGIN_FOLDER) if not filename.startswith('.')]
+        target_list = [filename for filename in os.listdir(self.system_plugin_folder_path) if not filename.startswith('.')]
         for plugin_name in target_list:
             print(plugin_name)
-            plugin_dir = os.path.join(SYSTEM_PLUGIN_FOLDER, plugin_name)
+            plugin_dir = os.path.join(self.system_plugin_folder_path, plugin_name)
             if os.path.isdir(plugin_dir):
                 with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
                     plugin_info = json.load(f)
