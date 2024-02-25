@@ -1,5 +1,5 @@
 import flet as ft
-from plugin_interface import PluginInterface
+from interfaces.plugin_interface import PluginInterface
 
 class SamplePlugin(PluginInterface):
     _instance = None

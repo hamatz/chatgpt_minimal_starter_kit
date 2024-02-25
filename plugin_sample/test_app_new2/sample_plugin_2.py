@@ -1,7 +1,7 @@
 import base64
 import os
 import flet as ft
-from plugin_interface import PluginInterface
+from interfaces.plugin_interface import PluginInterface
 from flet import (
     Column,
     Container,
