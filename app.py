@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import flet as ft
@@ -17,6 +18,7 @@ MY_SYSTEM_NAME = "CraftForgeBase"
 SYSTEM_FILENAME = "system_shared_data.json"
 VERSION = "0.1.0"
 BUILD_NUMBER = "1"
+MY_KEY_FILENAME = "my_app_info.json"
 
 class CraftForgeBase:
     def __init__(self, page: ft.Page, base_dir :str , save_dir: str) -> None:
@@ -83,34 +85,54 @@ def main(page: ft.Page) -> None:
     else:
         base_dir = os.path.dirname(os.path.abspath(__file__))
 
-    def on_dialog_result(e: ft.FilePickerResultEvent):
-        save_dir=e.path
-        page.overlay.remove(file_picker)
-        page.remove(select_dir_button)
-        page.clean()
-        page.update()
-        app = CraftForgeBase(page, base_dir , save_dir)
+    #新規ログインかどうかの確認
+    my_key_file_path = os.path.join(base_dir, MY_KEY_FILENAME)
+    is_key_file = os.path.isfile(my_key_file_path)
+
+    if is_key_file:
+        # トリッキーなので本当は直接このファイルを触りたくないが....
+        system_file_path = os.path.join(base_dir, SYSTEM_FILENAME)
+        with open(system_file_path, 'rb') as f:
+            my_key_file = json.load(f)
+            my_settings_info = my_key_file.get(MY_SYSTEM_NAME, {}).get( "settings")
+            my_save_dir = my_settings_info.get("my_save_path")
+        app = CraftForgeBase(page, base_dir , my_save_dir)
         app.system_fc.save_system_dict(MY_SYSTEM_NAME, "app_info",
                                     {"version" : VERSION, 
                                      "build_number" : BUILD_NUMBER})
         app.show_main_page()
 
-    def on_button_click(_):
+    else:
+        def on_dialog_result(e: ft.FilePickerResultEvent):
+            save_dir=e.path
+            page.overlay.remove(file_picker)
+            page.remove(select_dir_button)
+            page.clean()
+            page.update()
+            app = CraftForgeBase(page, base_dir , save_dir)
+            app.system_fc.save_system_dict(MY_SYSTEM_NAME, "app_info",
+                                        {"version" : VERSION, 
+                                        "build_number" : BUILD_NUMBER})
+            app.system_fc.save_system_dict(MY_SYSTEM_NAME, "settings",
+                                        {"my_save_path" : save_dir})
+            app.show_main_page()
+
+        def on_button_click(_):
+            page.overlay.append(file_picker)
+            page.update()
+            file_picker.get_directory_path()
+
+        # 保存先選択ボタン
+        select_dir_button = ft.ElevatedButton(
+            "本システムの利用する保存先のフォルダを選択してください",
+            on_click=on_button_click
+        )
+
+        page.add(select_dir_button)
+
+        file_picker = ft.FilePicker(on_result=on_dialog_result)
         page.overlay.append(file_picker)
         page.update()
-        file_picker.get_directory_path()
-
-    # 保存先選択ボタン
-    select_dir_button = ft.ElevatedButton(
-        "本システムの利用する保存先のフォルダを選択してください",
-        on_click=on_button_click
-    )
-
-    page.add(select_dir_button)
-
-    file_picker = ft.FilePicker(on_result=on_dialog_result)
-    page.overlay.append(file_picker)
-    page.update()
 
 if __name__ == "__main__":
     ft.app(target=main)
