@@ -33,7 +33,7 @@ class CraftForgeBase:
         self.ui_manager.add_component("simple_header2", SimpleHeader2)
         self.ui_manager.add_component("simple_footer", SimpleFooter)
         self.ui_manager.add_component("app_container", AppContainer)
-        self.mkm = MyKeyManager(self.page, self.ui_manager, base_dir)
+        self.mkm = MyKeyManager(self.page, self.ui_manager, base_dir, MY_KEY_FILENAME)
         self.system_fc = SystemFileController(SYSTEM_FILENAME, base_dir)
         self.system_api = SystemAPI(self.mkm, self.system_fc)
         self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir)
