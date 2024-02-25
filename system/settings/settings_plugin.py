@@ -2,7 +2,7 @@ import base64
 import json
 import os
 import flet as ft
-from system_plugin_interface import SystemPluginInterface
+from interfaces.system_plugin_interface import SystemPluginInterface
 from typing import Callable
 from ui_component_manager import UIComponentManager
 from system_api_layer import SystemAPI

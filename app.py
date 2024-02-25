@@ -19,7 +19,7 @@ SYSTEM_FILENAME = "system_shared_data.json"
 VERSION = "0.1.0"
 BUILD_NUMBER = "1"
 MY_KEY_FILENAME = "my_app_info.json"
-HAKONIWA = True
+HAKONIWA = False
 
 class CraftForgeBase:
     def __init__(self, page: ft.Page, base_dir :str , save_dir: str) -> None:
@@ -47,7 +47,6 @@ class CraftForgeBase:
             content=ft.Text("appbase_toast"),
             action="Alright!",
         )
-
         my_header_cmp = self.ui_manager.get_component("simple_header")
         my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.0.1", "#20b2aa")
         my_header_widget = my_header_instance.get_widget()
@@ -77,7 +76,6 @@ class CraftForgeBase:
         self.show_main_page()
 
 def main(page: ft.Page) -> None:
-
     # アプリケーションが実行されているディレクトリを取得
     if getattr(sys, 'frozen', False):
         # アプリケーションがPyInstallerによってパッケージされている場合
@@ -128,19 +126,15 @@ def main(page: ft.Page) -> None:
                 page.overlay.append(file_picker)
                 page.update()
                 file_picker.get_directory_path()
-
             # 保存先選択ボタン
             select_dir_button = ft.ElevatedButton(
                 "本システムの利用する保存先のフォルダを選択してください",
                 on_click=on_button_click
             )
-
             page.add(select_dir_button)
-
             file_picker = ft.FilePicker(on_result=on_dialog_result)
             page.overlay.append(file_picker)
             page.update()
 
 if __name__ == "__main__":
     ft.app(target=main)
-

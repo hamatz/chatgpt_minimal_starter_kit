@@ -9,8 +9,8 @@ import json
 import importlib
 import flet as ft
 from typing import Callable
-from plugin_interface import PluginInterface
-from system_plugin_interface import SystemPluginInterface
+from interfaces.plugin_interface import PluginInterface
+from interfaces.system_plugin_interface import SystemPluginInterface
 from ui_component_manager import UIComponentManager
 from system_api_layer import SystemAPI
 
