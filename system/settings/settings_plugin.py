@@ -121,7 +121,13 @@ class SettingsPlugin(SystemPluginInterface):
                              list_tile = ft.ListTile(
                                 title=ft.Text(prop_name),
                                 subtitle=ft.Switch(label=is_secure_data, value=is_secure_data, disabled=True),
-                            )                           
+                            )
+                        elif ui_type == "description": #利便性を考えるとdescription自体は常に暗号化されないべきなので is_secureの設定を無視する
+                            tmp_title=ft.TextField(label=prop_name, disabled=is_not_editable, value=values.get("value"))
+                            list_tile = ft.ListTile(
+                                title=tmp_title,
+                            )
+                            list_tile.trailing = ft.IconButton(ft.icons.EDIT, on_click=lambda e, tile=list_tile, s_name=service_name, p_name=prop_name,  is_secure=False: save_data(e, tile, s_name, p_name, is_secure) if not tile.title.disabled else change_edit_mode(e, tile))                                                       
                         content_container.controls.append(list_tile)
 
                     exp = ft.ExpansionPanel(

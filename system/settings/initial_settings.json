@@ -6,7 +6,7 @@
         },
         "description": {
             "value": "OpenAIのAPIアクセス用のトークン",
-            "ui_type": "text"
+            "ui_type": "description"
         },
         "is_encrypted": {
             "value": true,
@@ -20,7 +20,7 @@
         },
         "description": {
             "value": "OpenAI APIで利用するGPTモデル名",
-            "ui_type": "text"
+            "ui_type": "description"
         },
         "is_encrypted": {
             "value": true,
@@ -34,7 +34,7 @@
         },
         "description": {
             "value": "Azure OpenAIのAPIアクセス用のトークン",
-            "ui_type": "text"
+            "ui_type": "description"
         },
         "is_encrypted": {
             "value": true,
@@ -49,7 +49,7 @@
         },
         "description": {
             "value": "Azure OpenAIアクセス用のベースURL",
-            "ui_type": "text"
+            "ui_type": "description"
         },
         "is_encrypted": {
             "value": true,
@@ -64,7 +64,7 @@
         },
         "description": {
             "value": "Azure OpenAIアクセス用のAPI Version",
-            "ui_type": "text"
+            "ui_type": "description"
         },
         "is_encrypted": {
             "value": false,
@@ -79,7 +79,7 @@
         },
         "description": {
             "value": "Azure OpenAIアクセスで利用するGPTモデルのデプロイメント名",
-            "ui_type": "text"
+            "ui_type": "description"
         },
         "is_encrypted": {
             "value": false,
