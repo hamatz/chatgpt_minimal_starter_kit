@@ -55,11 +55,11 @@ class SettingsPlugin(SystemPluginInterface):
             edited_data = tile.title.value
             if is_secure:
                 target_data = self.system_api.encrypt_system_data(edited_data)
-                tile.title.value = target_data  # UI上で暗号化された値を表示する必要があるかどうかを検討
+                tile.title.value = target_data  # UI上で暗号化された値を表示する必要があるかどうかは要検討。今のところは一度設定したら見えない方が安全なのでは？という方針
             else:
                 target_data = edited_data
             
-            target_dict[prop_name] = {"value": target_data, "ui_type": "text", "is_encrypted": is_secure}
+            target_dict[prop_name] = {"value": target_data, "ui_type": "text", "ui_type": "description", "is_encrypted": is_secure}
 
             self.system_api.save_system_dict(MY_APP_NAME, service_name, target_dict)
             self.settings_info_dict = self.system_api.get_system_dicts_all()
@@ -80,7 +80,7 @@ class SettingsPlugin(SystemPluginInterface):
                     self.settings_info_dict = initial_settings
 
             my_system_info = system_data_dict.get(MY_SYSTEM_NAME, {}).get("app_info", {})
-            my_version = "Version : " + my_system_info.get("version", "不明")
+            my_version = "Version  " + my_system_info.get("version", "不明")
             my_build_num = my_system_info.get("build_number", "不明")
             my_version_info = my_version + " (" + my_build_num + ")"
 
@@ -90,9 +90,11 @@ class SettingsPlugin(SystemPluginInterface):
                 my_app_icon = ft.Image(src_base64=encoded_image_string, width=45, height=45,  fit="contain")
             title_bar = ft.ListTile(
                 leading=my_app_icon,
-                title=ft.Text("CraftForge" + " : " + my_version_info),
+                title=ft.Text("CraftForge" + "   " + my_version_info),
             )
             page.add(title_bar)
+
+            scrollable_container = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO)
 
             panel = ft.ExpansionPanelList(
                 expand_icon_color=ft.colors.AMBER,
@@ -110,7 +112,6 @@ class SettingsPlugin(SystemPluginInterface):
                     for prop_name, values  in setting_info.items():
                         ui_type = values.get("ui_type")
                         is_not_editable = True
-                        #is_secure_data = values.get("is_encrypted", False)
                         if ui_type == "text":
                             tmp_title=ft.TextField(label=prop_name, disabled=is_not_editable, value=values.get("value"))
                             list_tile = ft.ListTile(
@@ -136,7 +137,8 @@ class SettingsPlugin(SystemPluginInterface):
                         content=content_container, 
                     )
                     panel.controls.append(exp)
-            page.add(panel)
+            scrollable_container.controls.append(panel)
+            page.add(scrollable_container)
 
         load_system_info()
         page.update()
