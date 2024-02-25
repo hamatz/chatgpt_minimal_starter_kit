@@ -1,4 +1,5 @@
 import base64
+import tempfile
 import uuid
 import zipfile
 import os
@@ -19,14 +20,14 @@ TEMP_WORK_FOLDER = "temp"
 
 class PluginManager:
 
-    def __init__(self, page: ft.Page, page_back : Callable[[], None], ui_manager: UIComponentManager, system_api: SystemAPI, base_dir: str):
+    def __init__(self, page: ft.Page, page_back : Callable[[], None], ui_manager: UIComponentManager, system_api: SystemAPI, base_dir: str, save_dir: str):
         self.page = page
         self.page_back_func = page_back
         self.plugin_dict = {}
         self.__ui_manager = ui_manager
         self.__system_api = system_api
-        self.plugin_folder_path = os.path.join(base_dir, PLUGIN_FOLDER)
-        self.temp_work_folder_path = os.path.join(base_dir, TEMP_WORK_FOLDER)
+        self.plugin_folder_path = os.path.join(save_dir, PLUGIN_FOLDER)
+        self.temp_work_folder_path = os.path.join(save_dir, TEMP_WORK_FOLDER)
         self.system_plugin_folder_path = os.path.join(base_dir, SYSTEM_PLUGIN_FOLDER)
         if not os.path.exists(self.plugin_folder_path):
             os.makedirs(self.plugin_folder_path)
@@ -41,14 +42,13 @@ class PluginManager:
         picked_file_path = picked_file.path
         plugin_dir = os.path.join(self.plugin_folder_path, picked_file.name[:-4])  # ".zip"拡張子を除去
         os.makedirs(plugin_dir, exist_ok=True)
-        # ZIPファイルを一時ディレクトリに保存
-        zip_path = os.path.join("temp", picked_file.name)
-        shutil.copy(picked_file_path, zip_path)
-        # ZIPファイルを解凍するディレクトリを指定
         extract_dir = os.path.join(self.plugin_folder_path, picked_file.name[:-4])
         # ZIPファイルを解凍
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_dir)
+        with tempfile.TemporaryDirectory(dir=plugin_dir) as temp_dir:
+            zip_path = os.path.join(temp_dir, picked_file.name)
+            shutil.copy(picked_file_path, zip_path)
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_dir)
         # メタデータファイルを読み込み（例えば "plugin.json"）
         with open(os.path.join(extract_dir, "plugin.json"), 'r') as f:
             plugin_info = json.load(f)

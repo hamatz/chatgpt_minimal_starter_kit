@@ -1,11 +1,7 @@
 {
-    "project_name": "CraftForge",
-    "description": "Yet_Another_Application_Framework_Layer_for_Proof_of_Concept",
     "product_name": "CraftForge",
-    "org_name": "hamatz",
-    "company_name": "hamatz_personal_project",
-    "copyright": "hamatz",
-    "module_name":"app.py",
-    "build_version": "0.0.1",
+    "copyright": "2024_hamatz",
+    "description": "Yet_Another_Application_Framework_Layer_for_Proof_of_Concept",
+    "product_version": "0.0.1",
     "build_number": "1"
 }
