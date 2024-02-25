@@ -8,6 +8,6 @@ $productName = $jsonContent.product_name
 $copyright = $jsonContent.copyright
 
 Write-Host "Starting app packaging process"
-flet pack --build-version $buildVersion --build-number $buildNumber --description $description --product $productName --copyright $copyright --add-data="system;system" app.py
+flet pack --product-version $buildVersion --file-version $buildNumber --file-description $description --product-name $productName --copyright $copyright --add-data="system;system" app.py
 
 Write-Host "App packaging process completed."
