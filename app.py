@@ -18,21 +18,8 @@ SYSTEM_FILENAME = "system_shared_data.json"
 VERSION = "0.1.0"
 BUILD_NUMBER = "1"
 
-# アプリケーションが実行されているディレクトリを取得
-if getattr(sys, 'frozen', False):
-    # アプリケーションがPyInstallerによってパッケージされている場合
-    base_dir = os.path.dirname(sys.executable)
-else:
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-# ユーザーのホームディレクトリに保存用のフォルダパスを設定
-save_dir = os.path.join(os.path.expanduser('~'), MY_SYSTEM_NAME)
-
-# フォルダが存在しない場合は作成
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-
 class CraftForgeBase:
-    def __init__(self, page: ft.Page) -> None:
+    def __init__(self, page: ft.Page, base_dir :str , save_dir: str) -> None:
         self.page = page
         self.page.title = "ChatGPT minimal starter kit"
         self.page.vertical_alignment = ft.MainAxisAlignment.START
@@ -88,11 +75,42 @@ class CraftForgeBase:
 
 
 def main(page: ft.Page) -> None:
-    app = CraftForgeBase(page)
-    app.system_fc.save_system_dict(MY_SYSTEM_NAME, "app_info",
+
+# アプリケーションが実行されているディレクトリを取得
+    if getattr(sys, 'frozen', False):
+        # アプリケーションがPyInstallerによってパッケージされている場合
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    def on_dialog_result(e: ft.FilePickerResultEvent):
+        save_dir=e.path
+        page.overlay.remove(file_picker)
+        page.remove(select_dir_button)
+        page.clean()
+        page.update()
+        app = CraftForgeBase(page, base_dir , save_dir)
+        app.system_fc.save_system_dict(MY_SYSTEM_NAME, "app_info",
                                     {"version" : VERSION, 
                                      "build_number" : BUILD_NUMBER})
-    app.show_main_page()
+        app.show_main_page()
+
+    def on_button_click(_):
+        page.overlay.append(file_picker)
+        page.update()
+        file_picker.get_directory_path()
+
+    # 保存先選択ボタン
+    select_dir_button = ft.ElevatedButton(
+        "本システムの利用する保存先のフォルダを選択してください",
+        on_click=on_button_click
+    )
+
+    page.add(select_dir_button)
+
+    file_picker = ft.FilePicker(on_result=on_dialog_result)
+    page.overlay.append(file_picker)
+    page.update()
 
 if __name__ == "__main__":
     ft.app(target=main)
