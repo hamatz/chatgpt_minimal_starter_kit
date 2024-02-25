@@ -14,6 +14,7 @@ from flet import (
     colors,
 )
 
+# gotten from https://github.com/flet-dev/examples/blob/main/python/tutorials/calc/calc.py
 class CalculatorApp(UserControl):
     def build(self):
         self.reset()
