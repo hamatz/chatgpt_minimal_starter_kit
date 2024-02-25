@@ -24,7 +24,7 @@ HAKONIWA = True
 class CraftForgeBase:
     def __init__(self, page: ft.Page, base_dir :str , save_dir: str) -> None:
         self.page = page
-        self.page.title = "ChatGPT minimal starter kit"
+        self.page.title = MY_SYSTEM_NAME
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.ui_manager = UIComponentManager()
         self.ui_manager.add_component("password_daialog", PasswordDialog)

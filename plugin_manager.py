@@ -16,7 +16,6 @@ from system_api_layer import SystemAPI
 
 PLUGIN_FOLDER = "installed_plugins"
 SYSTEM_PLUGIN_FOLDER = "system"
-TEMP_WORK_FOLDER = "temp"
 
 class PluginManager:
 
@@ -27,12 +26,9 @@ class PluginManager:
         self.__ui_manager = ui_manager
         self.__system_api = system_api
         self.plugin_folder_path = os.path.join(save_dir, PLUGIN_FOLDER)
-        self.temp_work_folder_path = os.path.join(save_dir, TEMP_WORK_FOLDER)
         self.system_plugin_folder_path = os.path.join(base_dir, SYSTEM_PLUGIN_FOLDER)
         if not os.path.exists(self.plugin_folder_path):
             os.makedirs(self.plugin_folder_path)
-        if not os.path.exists(self.temp_work_folder_path):
-            os.makedirs(self.temp_work_folder_path)
         if not os.path.exists(self.system_plugin_folder_path):
             os.makedirs(self.system_plugin_folder_path)
 
