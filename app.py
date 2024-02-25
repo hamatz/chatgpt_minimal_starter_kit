@@ -7,6 +7,7 @@ from my_key_manager import MyKeyManager
 from ui_component_manager import UIComponentManager
 from system_file_controller import SystemFileController
 from system_api_layer import SystemAPI
+from api import API
 from ui_components.password_dialog import PasswordDialog
 from ui_components.delete_confirm_dialog import DeleteConfirmDialog
 from ui_components.simple_header import SimpleHeader
@@ -36,7 +37,8 @@ class CraftForgeBase:
         self.mkm = MyKeyManager(self.page, self.ui_manager, base_dir, MY_KEY_FILENAME)
         self.system_fc = SystemFileController(SYSTEM_FILENAME, base_dir)
         self.system_api = SystemAPI(self.mkm, self.system_fc)
-        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir)
+        self.api = API(self.system_api)
+        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir, self.api)
         self.mkm.load_my_key()
 
     def show_main_page(self) -> None:

@@ -14,7 +14,6 @@ from flet import (
     colors,
 )
 
-# gotten from https://github.com/flet-dev/examples/blob/main/python/tutorials/calc/calc.py
 class CalculatorApp(UserControl):
     def build(self):
         self.reset()
@@ -273,7 +272,7 @@ class SamplePlugin2(PluginInterface):
             cls._instance.ui_manager = ui_manager
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
         my_header_cmp = self.ui_manager.get_component("simple_header2")
         icon_path = os.path.join(my_app_path, "back_button.png")
         with open(icon_path, "rb") as image_file:

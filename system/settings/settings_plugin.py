@@ -23,7 +23,7 @@ class SettingsPlugin(SystemPluginInterface):
         page.snack_bar.open = True
         page.update()
 
-    def load(self, page: ft.Page, function_to_top_page : Callable[[],None], plugin_dir_path: str):
+    def load(self, page: ft.Page, function_to_top_page : Callable[[],None], plugin_dir_path: str, api):
         MY_SYSTEM_NAME = "CraftForgeBase"
         MY_APP_NAME = "System_Settings"
         page.clean()
