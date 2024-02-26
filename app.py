@@ -114,7 +114,7 @@ def main(page: ft.Page) -> None:
                                         {"version" : VERSION, 
                                         "build_number" : BUILD_NUMBER})
             app.system_fc.save_system_dict(MY_SYSTEM_NAME, "settings",
-                                        {"my_save_path" : base_dir})
+                                        {"my_save_path" : "HAKONIWA MODE"})
             app.show_main_page()
         else:
             def on_dialog_result(e: ft.FilePickerResultEvent):
