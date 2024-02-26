@@ -23,7 +23,7 @@
             "ui_type": "description"
         },
         "is_encrypted": {
-            "value": true,
+            "value": false,
             "ui_type": "toggle"
         }
     },
