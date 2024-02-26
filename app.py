@@ -93,7 +93,7 @@ def main(page: ft.Page) -> None:
         system_file_path = os.path.join(base_dir, SYSTEM_FILENAME)
         with open(system_file_path, 'rb') as f:
             my_key_file = json.load(f)
-            my_settings_info = my_key_file.get(MY_SYSTEM_NAME, {}).get( "settings")
+            my_settings_info = my_key_file.get(MY_SYSTEM_NAME, {}).get("settings")
             my_save_dir = my_settings_info.get("my_save_path")
         if HAKONIWA:
             app = CraftForgeBase(page, base_dir , base_dir)
