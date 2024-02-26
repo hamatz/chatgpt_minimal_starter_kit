@@ -11,11 +11,10 @@ import uuid
 import json
 import flet as ft
 
-
 class MyKeyManager:
 
     def __init__(self, page: ft.Page, ui_manager, base_dir, my_key_file_name):
-          self.my_key_file_path = os.path.join(base_dir, my_key_file_name)
+          self.__my_key_file_path = os.path.join(base_dir, my_key_file_name)
           self.__my_app_key = None
           self.__my_pass_phrase = None
           self.__page = page
@@ -59,11 +58,11 @@ class MyKeyManager:
             "encrypted_content_key": base64.b64encode(encrypted_pass_phrase).decode('utf-8'),
             "content_key_hash": base64.b64encode(content_key_hash).decode('utf-8'),
         }
-        with open(self.my_key_file_path, 'w') as f:
+        with open(self.__my_key_file_path, 'w') as f:
             json.dump(my_appkey_settings, f, indent=4)
 
     def load_my_key(self) -> bool:
-        is_key_file = os.path.isfile(self.my_key_file_path)
+        is_key_file = os.path.isfile(self.__my_key_file_path)
         password = None
 
         def close_dlg(e):
@@ -88,7 +87,7 @@ class MyKeyManager:
 
         def handle_key_file():
             if is_key_file:
-                with open(self.my_key_file_path, 'rb') as f:
+                with open(self.__my_key_file_path, 'rb') as f:
                     data = json.load(f)
                     salt = base64.b64decode(data['salt'])
                     iv = base64.b64decode(data['iv'])

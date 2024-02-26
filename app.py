@@ -95,11 +95,18 @@ def main(page: ft.Page) -> None:
             my_key_file = json.load(f)
             my_settings_info = my_key_file.get(MY_SYSTEM_NAME, {}).get( "settings")
             my_save_dir = my_settings_info.get("my_save_path")
-        app = CraftForgeBase(page, base_dir , my_save_dir)
-        app.system_fc.save_system_dict(MY_SYSTEM_NAME, "app_info",
-                                    {"version" : VERSION, 
-                                     "build_number" : BUILD_NUMBER})
-        app.show_main_page()
+        if HAKONIWA:
+            app = CraftForgeBase(page, base_dir , base_dir)
+            app.system_fc.save_system_dict(MY_SYSTEM_NAME, "app_info",
+                                        {"version" : VERSION, 
+                                        "build_number" : BUILD_NUMBER})
+            app.show_main_page()
+        else:
+            app = CraftForgeBase(page, base_dir , my_save_dir)
+            app.system_fc.save_system_dict(MY_SYSTEM_NAME, "app_info",
+                                        {"version" : VERSION, 
+                                        "build_number" : BUILD_NUMBER})
+            app.show_main_page()
     else:
         if HAKONIWA:
             app = CraftForgeBase(page, base_dir , base_dir)
