@@ -14,7 +14,9 @@ class API:
     
     def get_openai_gpt_model_name(self) -> str:
         openai_model_dict = self.__system_api.load_system_dict("System_Settings", "GPT_model_name")
-        my_openai_model_name =openai_model_dict.get("model_name").get("value", "gpt-4")
+        my_openai_model_name =openai_model_dict.get("model_name").get("value")
+        if not my_openai_model_name:
+            my_openai_model_name = "gpt-4"
         return my_openai_model_name
     
     def get_azure_gpt_instance(self):

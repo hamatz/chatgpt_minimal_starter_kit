@@ -16,10 +16,10 @@ class SampleChat(PluginInterface):
 
     def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
 
-        def get_answer(prompt):
+        def get_answer(prompt, my_gpt_model):
             message=[{ "role": "user","content":prompt}]
             response = chat_client.chat.completions.create(
-                model="gpt-4",
+                model=my_gpt_model,
                 messages=message,
                 stream=True
             )
@@ -27,6 +27,7 @@ class SampleChat(PluginInterface):
         
         page.clean()
         chat_client = api.get_chat_gpt_instance()
+        my_gpt_model = api.get_openai_gpt_model_name()
 
         def reset_page_setting_and_close():
             page.horizontal_alignment = ft.CrossAxisAlignment.START
@@ -70,7 +71,7 @@ class SampleChat(PluginInterface):
                 reply_text = ""
                 cm = ChatMessage("GPT君", reply_text, page)
                 chat.controls.append(cm)
-                answer = get_answer(user_message)
+                answer = get_answer(user_message, my_gpt_model)
                 for chunk in answer:
                     chunk_message = chunk.choices[0].delta.content
                     if chunk_message is not None:
