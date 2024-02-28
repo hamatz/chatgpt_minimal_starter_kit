@@ -42,8 +42,7 @@ class SettingsPlugin(SystemPluginInterface):
         my_header_widget = my_header_instance.get_widget()
         page.add(my_header_widget)
 
-        def add_new_setting(self, system_dict, setting_name, element_value, description_value, is_encrypted) -> bool:
-            # キー名のバリデーション
+        def add_new_setting(self, system_dict : dict, setting_name :str, element_name :str, element_value: str, description_value: str, is_encrypted: bool) -> bool:
             if not re.match(r'^\w+$', setting_name):
                 raise ValidationError("キー名は英数字のみ使用できます。")
             if setting_name in system_dict["System_Settings"]:
@@ -57,7 +56,7 @@ class SettingsPlugin(SystemPluginInterface):
                 "ui_type": "description",
             }
             self.system_api.save_system_dict(MY_APP_NAME, setting_name, {
-                setting_name: new_setting,
+                element_name: new_setting,
                 "description": description,
                 "is_encrypted": {"value": is_encrypted, "ui_type": "toggle"}
             })
