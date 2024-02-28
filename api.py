@@ -34,5 +34,10 @@ class API:
                 api_key=my_azure_token,
         )
         return chat_client
+    
+    def get_my_azure_deployment_name(self):
+        azure_deployment_dict = self.__system_api.load_system_dict("System_Settings", "Azure_Deployment_name")
+        my_azure_deployment_name =azure_deployment_dict.get("deployment_name").get("value")
+        return my_azure_deployment_name       
 
 

@@ -18,20 +18,21 @@ class SampleChat(PluginInterface):
 
         def get_answer(prompt, my_gpt_model):
             message=[{ "role": "user","content":prompt}]
-            response = chat_client.chat.completions.create(
-                model=my_gpt_model,
+            model_name = my_gpt_model if self.my_service == "OpenAI" else self.my_azure_deployment_name
+            response = self.chat_client.chat.completions.create(
+                model=model_name,
                 messages=message,
                 stream=True
             )
             return response
         
         page.clean()
-        chat_client = api.get_chat_gpt_instance()
-        my_gpt_model = api.get_openai_gpt_model_name()
+        self.my_service = "OpenAI"
 
-        def reset_page_setting_and_close():
-            page.horizontal_alignment = ft.CrossAxisAlignment.START
-            function_to_top_page()
+        def service_selected(e):
+            self.my_service = dropdown.value
+            set_gpt_client()
+            page.update()
 
         my_header_cmp = self.ui_manager.get_component("simple_header2")
         icon_path = os.path.join(my_app_path, "back_button.png")
@@ -46,6 +47,32 @@ class SampleChat(PluginInterface):
         my_header_widget = my_header_instance.get_widget()
         
         page.add(my_header_widget)
+
+        button = ft.ElevatedButton(text="決定", on_click=service_selected)
+        dropdown = ft.Dropdown(
+            width=100,
+            options=[
+                ft.dropdown.Option("OpenAI"),
+                ft.dropdown.Option("Azure"),
+            ],
+        )
+        button_container = ft.Row(spacing=5, controls=[dropdown, button], alignment=ft.MainAxisAlignment.END)
+        page.add(button_container)
+
+        def set_gpt_client() -> None:
+            if self.my_service == "OpenAI":
+                self.chat_client = api.get_chat_gpt_instance()
+                self.my_gpt_model = api.get_openai_gpt_model_name()
+            elif self.my_service == "Azure":
+                self.chat_client = api.get_azure_gpt_instance()
+                self.my_azure_deployment_name = api.get_my_azure_deployment_name()
+
+        def reset_page_setting_and_close():
+            page.horizontal_alignment = ft.CrossAxisAlignment.START
+            function_to_top_page()
+
+        set_gpt_client()
+
         page.horizontal_alignment = "stretch"
 
         current_chat_area = None
@@ -71,7 +98,7 @@ class SampleChat(PluginInterface):
                 reply_text = ""
                 cm = ChatMessage("GPT君", reply_text, page)
                 chat.controls.append(cm)
-                answer = get_answer(user_message, my_gpt_model)
+                answer = get_answer(user_message, self.my_gpt_model)
                 for chunk in answer:
                     chunk_message = chunk.choices[0].delta.content
                     if chunk_message is not None:
