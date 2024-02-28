@@ -82,7 +82,7 @@ class SettingsPlugin(SystemPluginInterface):
                 target_data = edited_data
             
             ui_type = "description" if prop_name == "description" else "text"
-            target_dict[prop_name] = {"value": target_data, "ui_type": ui_type, "is_encrypted": is_secure}
+            target_dict[prop_name] = {"value": target_data, "ui_type": ui_type}
 
             self.system_api.save_system_dict(MY_APP_NAME, service_name, target_dict)
             self.settings_info_dict = self.system_api.get_system_dicts_all()
@@ -125,7 +125,6 @@ class SettingsPlugin(SystemPluginInterface):
                 divider_color=ft.colors.AMBER,
                 controls=[],
             )
-
             if self.settings_info_dict:
                 for service_name, settings in self.settings_info_dict.items():
                     title = service_name
