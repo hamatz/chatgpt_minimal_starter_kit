@@ -1,11 +1,13 @@
 import base64
 import json
 import os
+import re
 import flet as ft
 from interfaces.system_plugin_interface import SystemPluginInterface
 from typing import Callable
 from ui_component_manager import UIComponentManager
 from system_api_layer import SystemAPI
+from exceptions import ValidationError, DuplicateKeyError
 
 class SettingsPlugin(SystemPluginInterface):
 
@@ -39,6 +41,28 @@ class SettingsPlugin(SystemPluginInterface):
         my_header_instance = my_header_cmp(clickable_icon, MY_APP_NAME, "#20b2aa")
         my_header_widget = my_header_instance.get_widget()
         page.add(my_header_widget)
+
+        def add_new_setting(self, system_dict, setting_name, element_value, description_value, is_encrypted) -> bool:
+            # キー名のバリデーション
+            if not re.match(r'^\w+$', setting_name):
+                raise ValidationError("キー名は英数字のみ使用できます。")
+            if setting_name in system_dict["System_Settings"]:
+                raise DuplicateKeyError("既に同じキー名が存在します。")
+            new_setting = {
+                "value": element_value,
+                "ui_type": "text",
+            }
+            description = {
+                "value": description_value,
+                "ui_type": "description",
+            }
+            self.system_api.save_system_dict(MY_APP_NAME, setting_name, {
+                setting_name: new_setting,
+                "description": description,
+                "is_encrypted": {"value": is_encrypted, "ui_type": "toggle"}
+            })
+            self.settings_info_dict = self.system_api.get_system_dicts_all()
+            return True
 
         def change_edit_mode(e: ft.ControlEvent, tile: ft.ListTile) -> None:
             tile.title.disabled = not tile.title.disabled  # テキストフィールドのdisabled属性を反転
