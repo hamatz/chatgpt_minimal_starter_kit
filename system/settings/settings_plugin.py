@@ -20,11 +20,6 @@ class SettingsPlugin(SystemPluginInterface):
             cls._instance.system_api = system_api
         return cls._instance
 
-    def show_toast(e, page: ft.Page, message: str) -> None:
-        page.snack_bar = ft.SnackBar(ft.Text(message))
-        page.snack_bar.open = True
-        page.update()
-
     def load(self, page: ft.Page, function_to_top_page : Callable[[],None], plugin_dir_path: str, api):
         MY_SYSTEM_NAME = "CraftForgeBase"
         MY_APP_NAME = "System_Settings"
@@ -42,10 +37,10 @@ class SettingsPlugin(SystemPluginInterface):
         my_header_widget = my_header_instance.get_widget()
         page.add(my_header_widget)
 
-        def add_new_setting(self, system_dict : dict, setting_name :str, element_name :str, element_value: str, description_value: str, is_encrypted: bool) -> bool:
+        def add_new_setting(system_dict : dict, setting_name :str, element_name :str, element_value: str, description_value: str, is_encrypted: bool) -> bool:
             if not re.match(r'^\w+$', setting_name):
                 raise ValidationError("キー名は英数字のみ使用できます。")
-            if setting_name in system_dict["System_Settings"]:
+            if setting_name in system_dict:
                 raise DuplicateKeyError("既に同じキー名が存在します。")
             new_setting = {
                 "value": element_value,
@@ -80,10 +75,8 @@ class SettingsPlugin(SystemPluginInterface):
                 tile.title.value = target_data  # UI上で暗号化された値を表示する必要があるかどうかは要検討。今のところは一度設定したら見えない方が安全なのでは？という方針
             else:
                 target_data = edited_data
-            
             ui_type = "description" if prop_name == "description" else "text"
             target_dict[prop_name] = {"value": target_data, "ui_type": ui_type}
-
             self.system_api.save_system_dict(MY_APP_NAME, service_name, target_dict)
             self.settings_info_dict = self.system_api.get_system_dicts_all()
             change_edit_mode(e, tile)  # 編集モードを切り替えて編集不可状態に戻す
@@ -161,6 +154,47 @@ class SettingsPlugin(SystemPluginInterface):
                     panel.controls.append(exp)
             scrollable_container.controls.append(panel)
             page.add(scrollable_container)
+
+            def add_new_info(e):
+                add_new_setting(self.settings_info_dict,tb1.value,tb2.value,tb3.value,tb4.value,tb5.value)
+                bottom_sheet.open = False
+                bottom_sheet.update()
+
+            tb1 = ft.TextField(label="設定情報名（英数字）")
+            tb2 = ft.TextField(label="設定情報要素名")
+            tb3 = ft.TextField(label="設定情報の中身")
+            tb4 = ft.TextField(label="説明文")
+            tb5 = ft.Switch(label="暗号化要否", value=True, disabled=False)
+            b = ft.ElevatedButton(text="登録する", on_click=add_new_info)
+
+            def bs_dismissed(e):
+                print("New Param was saved!")
+
+            def show_edit_sheet(e):
+                bottom_sheet.open = True
+                bottom_sheet.update()
+
+            bottom_sheet = ft.BottomSheet(
+                ft.Container(
+                    ft.Column(
+                        [
+                            tb1,tb2,tb3,tb4,tb5,b,
+                        ],
+                        tight=True,
+                    ),
+                    padding=10,
+                ),
+                open=False,
+                on_dismiss=bs_dismissed,
+            )
+            page.overlay.append(bottom_sheet)
+
+            def fab_pressed(e):
+                show_edit_sheet(e)
+
+            page.floating_action_button = ft.FloatingActionButton(
+                icon=ft.icons.ADD, on_click=fab_pressed, bgcolor=ft.colors.WHITE30,
+            )
 
         load_system_info()
         page.update()
