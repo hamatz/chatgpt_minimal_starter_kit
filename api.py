@@ -1,3 +1,4 @@
+import hashlib
 from openai import AzureOpenAI, OpenAI
 
 class API:
@@ -38,6 +39,30 @@ class API:
     def get_my_azure_deployment_name(self):
         azure_deployment_dict = self.__system_api.load_system_dict("System_Settings", "Azure_Deployment_name")
         my_azure_deployment_name =azure_deployment_dict.get("deployment_name").get("value")
-        return my_azure_deployment_name       
+        return my_azure_deployment_name
+    
+    def save_my_content_key(self, app_instance, content_key:str, caller_app_dir:str):
+        app_class_name = app_instance.__class__.__name__
+        target_app_name = app_class_name + caller_app_dir
+        target_app_hashed_name = hashlib.sha256(target_app_name.encode()).hexdigest()
+        encryoted__key_data = self.__system_api.encrypt_system_data(content_key)
+        encrypted_app_path = self.__system_api.encrypt_system_data(caller_app_dir)
+        key_data_dict = { 'value' : encryoted__key_data,
+                         'app_dir' : encrypted_app_path}
+        return self.__system_api.save_system_dict(target_app_hashed_name, "content_key",  key_data_dict)
+    
+    def load_my_content_key(self, app_instance, caller_app_dir:str):
+        app_class_name = app_instance.__class__.__name__
+        target_app_name = app_class_name + caller_app_dir
+        target_app_hashed_name = hashlib.sha256(target_app_name.encode()).hexdigest()
+        encrypted_my_key = self.__system_api.load_system_dict(target_app_hashed_name, "content_key").get("value")
+        encrypted_caller_app_path = self.__system_api.load_system_dict(target_app_hashed_name, "content_key").get("app_dir")
+        caller_app_path = self.__system_api.decrypt_system_data(encrypted_caller_app_path)
+        if caller_app_path == caller_app_dir:
+            return self.__system_api.decrypt_system_data(encrypted_my_key)
+        else:
+            return "Auth Error"
+
+
 
 
