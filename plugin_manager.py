@@ -38,27 +38,28 @@ class PluginManager:
         # プラグインを保存する一意のディレクトリを作成
         picked_file = e.files[0]
         picked_file_path = picked_file.path
-        plugin_dir = os.path.join(self.plugin_folder_path, picked_file.name[:-4])  # ".zip"拡張子を除去
+        unique_key = str(uuid.uuid4())
+        plugin_folder_name = picked_file.name[:-4] + unique_key  # ".zip"拡張子を除去してからunique_keyをつなげる
+        plugin_dir = os.path.join(self.plugin_folder_path, plugin_folder_name)
         os.makedirs(plugin_dir, exist_ok=True)
-        extract_dir = os.path.join(self.plugin_folder_path, picked_file.name[:-4])
         # ZIPファイルを解凍
         with tempfile.TemporaryDirectory(dir=plugin_dir) as temp_dir:
             zip_path = os.path.join(temp_dir, picked_file.name)
             shutil.copy(picked_file_path, zip_path)
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(extract_dir)
+                zip_ref.extractall(plugin_dir)
         # メタデータファイルを読み込み（例えば "plugin.json"）
-        with open(os.path.join(extract_dir, "plugin.json"), 'r') as f:
+        with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
             plugin_info = json.load(f)
         print(plugin_info)
-        sys.path.append(extract_dir)
+        sys.path.append(plugin_dir)
         # プラグインモジュールを動的にインポート
         plugin_module = importlib.import_module(plugin_info["main_module"])
         print(plugin_module)
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
         print(plugin_class)
         plugin_instance = plugin_class(self.__ui_manager) 
-        icon_path = os.path.join(extract_dir, plugin_info["icon"])
+        icon_path = os.path.join(plugin_dir, plugin_info["icon"])
         with open(icon_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
         # アプリケーションのアイコンをUIに追加 
@@ -66,7 +67,7 @@ class PluginManager:
         # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
         clickable_image = ft.GestureDetector(
             content=app_icon,
-            on_tap= lambda _, instance=plugin_instance, extract_dir=extract_dir: instance.load(self.page, self.page_back_func, extract_dir, self.api)
+            on_tap= lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir, self.api)
         )
         app_container_cmp = self.__ui_manager.get_component("app_container")
         app_title = plugin_info["name"]
