@@ -1,3 +1,4 @@
+import ast
 import base64
 import tempfile
 import uuid
@@ -34,6 +35,51 @@ class PluginManager:
         if not os.path.exists(self.system_plugin_folder_path):
             os.makedirs(self.system_plugin_folder_path)
 
+    def scan_for_forbidden_functions(folder_path):
+        forbidden_code_found = False
+
+        class ForbiddenFunctionFinder(ast.NodeVisitor):
+            def __init__(self):
+                self.forbidden_os_functions = {
+                    "os": ["system", "popen", "execl", "execle", "execlp", "execlpe", "execv", "execve", "execvp", "execvpe", "open", "remove", "unlink", "rmdir", "removedirs", "rename", "walk"]
+                }
+                self.danger_functions = ["eval", "exec", "open", "__import__"]
+
+            def visit_Import(self, node):
+                for alias in node.names:
+                    if alias.name in self.forbidden_os_functions or alias.name in self.danger_functions:
+                        nonlocal forbidden_code_found
+                        forbidden_code_found = True
+                self.generic_visit(node)
+
+            def visit_ImportFrom(self, node):
+                if node.module in self.forbidden_os_functions or node.module in self.danger_functions:
+                    nonlocal forbidden_code_found
+                    forbidden_code_found = True
+                self.generic_visit(node)
+
+            def visit_Call(self, node):
+                if (isinstance(node.func, ast.Attribute) and 
+                    node.func.attr in self.forbidden_os_functions.get(getattr(node.func.value, 'id', ''), [])) or \
+                    (isinstance(node.func, ast.Name) and node.func.id in self.danger_functions):
+                    nonlocal forbidden_code_found
+                    forbidden_code_found = True
+                self.generic_visit(node)
+
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                if file.endswith(".py"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, "r") as source_file:
+                        tree = ast.parse(source_file.read(), filename=file_path)
+                        finder = ForbiddenFunctionFinder()
+                        finder.visit(tree)
+                        if forbidden_code_found:
+                            # 悪意のあるコードが見つかったら、すぐに False を返してスキャンを終了する
+                            return False
+        # 悪意のあるコードが見つからなければ True を返す
+        return True
+
     def install_plugin(self, e: ft.FilePickerResultEvent, container: ft.Container) -> None:
         # プラグインを保存する一意のディレクトリを作成
         picked_file = e.files[0]
@@ -43,45 +89,55 @@ class PluginManager:
         plugin_dir = os.path.join(self.plugin_folder_path, plugin_folder_name)
         os.makedirs(plugin_dir, exist_ok=True)
         # ZIPファイルを解凍
-        with tempfile.TemporaryDirectory(dir=plugin_dir) as temp_dir:
-            zip_path = os.path.join(temp_dir, picked_file.name)
-            shutil.copy(picked_file_path, zip_path)
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(plugin_dir)
-        # メタデータファイルを読み込み（例えば "plugin.json"）
-        with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
-            plugin_info = json.load(f)
-        print(plugin_info)
-        sys.path.append(plugin_dir)
-        # プラグインモジュールを動的にインポート
-        plugin_module = importlib.import_module(plugin_info["main_module"])
-        print(plugin_module)
-        plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
-        print(plugin_class)
-        plugin_instance = plugin_class(self.__ui_manager) 
-        icon_path = os.path.join(plugin_dir, plugin_info["icon"])
-        with open(icon_path, "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-        # アプリケーションのアイコンをUIに追加 
-        app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
-        # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
-        clickable_image = ft.GestureDetector(
-            content=app_icon,
-            on_tap= lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir, self.api)
-        )
-        app_container_cmp = self.__ui_manager.get_component("app_container")
-        app_title = plugin_info["name"]
-        app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff")
-        app_container_widget = app_container_instance.get_widget()
-        unique_key = str(uuid.uuid4())
-        deletable_app_container = ft.GestureDetector(
-             content=app_container_widget,
-             on_long_press_start= lambda e: self.show_delete_confirmation(plugin_dir, unique_key)
+        try:
+            with tempfile.TemporaryDirectory(dir=plugin_dir) as temp_dir:
+                zip_path = os.path.join(temp_dir, picked_file.name)
+                shutil.copy(picked_file_path, zip_path)
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(plugin_dir)
+
+                    # セキュリティスキャンを実行
+            if not self.scan_for_forbidden_functions(plugin_dir):
+                raise Exception("Security check failed: Forbidden functions found in the plugin code.")
+            # メタデータファイルを読み込み（例えば "plugin.json"）
+            with open(os.path.join(plugin_dir, "plugin.json"), 'r') as f:
+                plugin_info = json.load(f)
+            print(plugin_info)
+            sys.path.append(plugin_dir)
+            # プラグインモジュールを動的にインポート
+            plugin_module = importlib.import_module(plugin_info["main_module"])
+            print(plugin_module)
+            plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+            print(plugin_class)
+            plugin_instance = plugin_class(self.__ui_manager) 
+            icon_path = os.path.join(plugin_dir, plugin_info["icon"])
+            with open(icon_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+            # アプリケーションのアイコンをUIに追加 
+            app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
+            # アイコンのクリックイベントにプラグインのUIビルド関数を関連付け
+            clickable_image = ft.GestureDetector(
+                content=app_icon,
+                on_tap= lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir, self.api)
             )
-        container.controls.append(deletable_app_container)
-        self.myapp_container = container
-        self.plugin_dict[unique_key] = deletable_app_container
-        self.page.update()
+            app_container_cmp = self.__ui_manager.get_component("app_container")
+            app_title = plugin_info["name"]
+            app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff")
+            app_container_widget = app_container_instance.get_widget()
+            unique_key = str(uuid.uuid4())
+            deletable_app_container = ft.GestureDetector(
+                content=app_container_widget,
+                on_long_press_start= lambda e: self.show_delete_confirmation(plugin_dir, unique_key)
+                )
+            container.controls.append(deletable_app_container)
+            self.myapp_container = container
+            self.plugin_dict[unique_key] = deletable_app_container
+            self.page.update()
+        except Exception as e:
+            print(f"Plugin installation failed: {e}")
+            # インストールに失敗した場合はフォルダを削除
+            shutil.rmtree(plugin_dir, ignore_errors=True)
+            return
 
     def show_delete_confirmation(self, plugin_dir, unique_key) -> None:
 
