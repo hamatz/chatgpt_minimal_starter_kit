@@ -95,7 +95,6 @@ class PluginManager:
                 shutil.copy(picked_file_path, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(plugin_dir)
-
                     # セキュリティスキャンを実行
             if not self.scan_for_forbidden_functions(plugin_dir):
                 raise Exception("Security check failed: Forbidden functions found in the plugin code.")
@@ -135,7 +134,7 @@ class PluginManager:
             self.page.update()
         except Exception as e:
             print(f"Plugin installation failed: {e}")
-            # インストールに失敗した場合はフォルダを削除
+            # インストールに失敗した場合は展開したフォルダを削除
             shutil.rmtree(plugin_dir, ignore_errors=True)
             return
 
