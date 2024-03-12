@@ -72,14 +72,17 @@ class PluginManager:
         app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff" if "system" not in plugin_dir else "#657564")
         app_container_widget = app_container_instance.get_widget()
 
-        unique_key = str(uuid.uuid4())
-        deletable_app_container = ft.GestureDetector(
-            content=app_container_widget,
-            on_long_press_start=lambda e: self.show_delete_confirmation(plugin_dir, unique_key)
-        )
-        container.controls.append(deletable_app_container)
-        self.myapp_container = container
-        self.plugin_dict[unique_key] = deletable_app_container
+        if "system" in plugin_dir:
+            container.controls.append(app_container_widget)
+        else:
+            unique_key = str(uuid.uuid4())
+            deletable_app_container = ft.GestureDetector(
+                content=app_container_widget,
+                on_long_press_start=lambda e: self.show_delete_confirmation(plugin_dir, unique_key)
+            )
+            container.controls.append(deletable_app_container)
+            self.myapp_container = container
+            self.plugin_dict[unique_key] = deletable_app_container
         self.page.update()
 
     def install_plugin(self, e: ft.FilePickerResultEvent, container: ft.Container) -> None:
