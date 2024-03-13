@@ -69,6 +69,7 @@ CraftForgeは、開発者と非開発者双方に対し、カスタマイズ可�
   ```sh
   pip install flet
   pip install cryptography
+  pip install openai
   ```
 
 ### Installation
