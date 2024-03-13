@@ -84,9 +84,12 @@ class MyKeyManager:
             json.dump(my_appkey_settings, f, indent=4)
 
     def load_my_key(self, password: str) -> bool:
-            # ロックアウト状態のチェック
+        # ロックアウト状態のチェック
         if self.locked_until and self.locked_until > datetime.now():
             print("Account is locked.")
+            self.__page.snack_bar = ft.SnackBar(ft.Text(f"システムロック中です {self.locked_until}"))
+            self.__page.snack_bar.open = True
+            self.__page.update()
             return False
         try:
             with open(self.__my_key_file_path, 'r') as f:
@@ -110,9 +113,6 @@ class MyKeyManager:
                 if self.failed_attempts >= 5:
                     # 5回失敗したら10分ロック
                     self.locked_until = datetime.now() + timedelta(minutes=10)
-                    self.__page.snack_bar = ft.SnackBar(ft.Text(f"システムロック中です {self.locked_until}"))
-                    self.__page.snack_bar.open = True
-                    self.__page.update()
                 return False
             # 成功したら試行回数をリセット
             self.failed_attempts = 0
