@@ -1,5 +1,6 @@
 import base64
 import hashlib
+from datetime import datetime, timedelta
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -13,11 +14,13 @@ import flet as ft
 class MyKeyManager:
 
     def __init__(self, page: ft.Page, ui_manager, base_dir, my_key_file_name):
-          self.__my_key_file_path = os.path.join(base_dir, my_key_file_name)
-          self.__my_app_key = None
-          self.__my_pass_phrase = None
-          self.__page = page
-          self.__ui_manager = ui_manager
+        self.__my_key_file_path = os.path.join(base_dir, my_key_file_name)
+        self.__my_app_key = None
+        self.__my_pass_phrase = None
+        self.__page = page
+        self.__ui_manager = ui_manager
+        self.failed_attempts = 0
+        self.locked_until = None
 
     def prompt_password_dialog(self):
         def close_dlg(e):
@@ -81,6 +84,10 @@ class MyKeyManager:
             json.dump(my_appkey_settings, f, indent=4)
 
     def load_my_key(self, password: str) -> bool:
+            # ロックアウト状態のチェック
+        if self.locked_until and self.locked_until > datetime.now():
+            print("Account is locked.")
+            return False
         try:
             with open(self.__my_key_file_path, 'r') as f:
                 key_data = json.load(f)
@@ -95,8 +102,21 @@ class MyKeyManager:
             decrypted_pass_phrase = decryptor.update(encrypted_pass_phrase) + decryptor.finalize()
             decrypted_pass_phrase_hash = hashlib.sha256(decrypted_pass_phrase).hexdigest() 
             if decrypted_pass_phrase_hash != content_key_hash:
+                self.failed_attempts += 1
                 print("password error")
+                self.__page.snack_bar = ft.SnackBar(ft.Text(f"パスワードエラーです {self.failed_attempts}/5"))
+                self.__page.snack_bar.open = True
+                self.__page.update()
+                if self.failed_attempts >= 5:
+                    # 5回失敗したら10分ロック
+                    self.locked_until = datetime.now() + timedelta(minutes=10)
+                    self.__page.snack_bar = ft.SnackBar(ft.Text(f"システムロック中です {self.locked_until}"))
+                    self.__page.snack_bar.open = True
+                    self.__page.update()
                 return False
+            # 成功したら試行回数をリセット
+            self.failed_attempts = 0
+            self.locked_until = None
             self.__my_app_key = derived_key
             self.__my_pass_phrase = decrypted_pass_phrase.decode()
             print("Key was successfully decrypted and loaded")
@@ -112,6 +132,7 @@ class MyKeyManager:
                 print("Key file successfully processed.")
             else:
                 print("Failed to process key file.")
+                self.prompt_password_dialog()
         else:
             # 鍵ファイルが存在しない場合の初期設定処理
             print("cannot find my_app_info.json")
