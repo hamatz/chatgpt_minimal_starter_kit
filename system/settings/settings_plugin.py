@@ -24,6 +24,12 @@ class SettingsPlugin(SystemPluginInterface):
         MY_SYSTEM_NAME = "CraftForgeBase"
         MY_APP_NAME = "System_Settings"
         page.clean()
+
+        def reset_page_setting_and_close():
+            page.overlay.remove(self.bottom_sheet)
+            page.floating_action_button = None
+            function_to_top_page()
+
         my_header_cmp = self.ui_manager.get_component("simple_header2")
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
         with open(icon_path, "rb") as image_file:
@@ -31,7 +37,7 @@ class SettingsPlugin(SystemPluginInterface):
             app_icon = ft.Image(src_base64=encoded_string, width=30, height=30)
         clickable_icon = ft.GestureDetector(
             content=app_icon,
-            on_tap= lambda _: function_to_top_page()
+            on_tap= lambda _: reset_page_setting_and_close()
         )
         my_header_instance = my_header_cmp(clickable_icon, MY_APP_NAME, "#20b2aa")
         my_header_widget = my_header_instance.get_widget()
@@ -188,6 +194,7 @@ class SettingsPlugin(SystemPluginInterface):
                 on_dismiss=bs_dismissed,
             )
             page.overlay.append(bottom_sheet)
+            self.bottom_sheet = bottom_sheet
 
             def fab_pressed(e):
                 show_edit_sheet(e)

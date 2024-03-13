@@ -28,8 +28,8 @@ class CraftForgeBase:
         self.page.title = MY_SYSTEM_NAME
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.ui_manager = UIComponentManager()
-        self.ui_manager.add_component("password_daialog", PasswordDialog)
-        self.ui_manager.add_component("delete_confirm_daialog", DeleteConfirmDialog)
+        self.ui_manager.add_component("password_dialog", PasswordDialog)
+        self.ui_manager.add_component("delete_confirm_dialog", DeleteConfirmDialog)
         self.ui_manager.add_component("simple_header", SimpleHeader)
         self.ui_manager.add_component("simple_header2", SimpleHeader2)
         self.ui_manager.add_component("simple_footer", SimpleFooter)
@@ -39,7 +39,7 @@ class CraftForgeBase:
         self.system_api = SystemAPI(self.mkm, self.system_fc)
         self.api = API(self.system_api)
         self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir, self.api)
-        self.mkm.load_my_key()
+        self.mkm.prompt_password_dialog()
 
     def show_main_page(self) -> None:
         def pick_file_and_install(e: ft.FilePickerResultEvent):

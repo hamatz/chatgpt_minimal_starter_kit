@@ -116,11 +116,10 @@ class PluginManager:
         def close_dlg(e) -> None:
             self.page.dialog.open = False
             self.page.update()
-
-        dlg_component = self.__ui_manager.get_component("delete_confirm_daialog")
+        
+        dlg_component = self.__ui_manager.get_component("delete_confirm_dialog")
         delete_target = [plugin_dir, unique_key]
         dlg_modal = dlg_component("プラグインの削除", "このプラグインを削除してもよろしいですか？", "いいえ", "はい", close_dlg, self.delete_plugin, delete_target)
-
         self.page.dialog = dlg_modal.get_widget()
         self.page.dialog.open = True
         self.page.update()
@@ -156,7 +155,6 @@ class PluginManager:
             print(plugin_name)
             plugin_dir = os.path.join(self.plugin_folder_path, plugin_name)
             if os.path.isdir(plugin_dir):
-                # プラグインのメタデータを読み込み
                 self._load_plugin(plugin_dir, container)
     
     def load_system_plugins(self, container: ft.Container) -> None:
