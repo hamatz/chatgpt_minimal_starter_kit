@@ -94,7 +94,7 @@ class PluginManager:
         os.makedirs(plugin_dir, exist_ok=True)
         # ZIPファイルを解凍
         try:
-            with tempfile.TemporaryDirectory(dir=plugin_dir) as temp_dir:
+            with tempfile.TemporaryDirectory() as temp_dir:
                 zip_path = os.path.join(temp_dir, picked_file.name)
                 shutil.copy(picked_file_path, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
