@@ -70,6 +70,8 @@ CraftForgeは、開発者と非開発者双方に対し、カスタマイズ可�
   pip install flet
   pip install cryptography
   pip install openai
+  pip install langchain
+  pip install qdrant_client
   ```
 
 ### Installation

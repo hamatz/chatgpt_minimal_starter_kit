@@ -85,5 +85,20 @@
             "value": false,
             "ui_type": "toggle"
         }
+    },
+    "Azure_Embeddings_Deployment_name": 
+    {
+        "deployment_name": {
+            "value": "",
+            "ui_type": "text"
+        },
+        "description": {
+            "value": "Azure上で利用するEmbeddingsモデルのデプロイメント名",
+            "ui_type": "description"
+        },
+        "is_encrypted": {
+            "value": false,
+            "ui_type": "toggle"
+        }
     }
 }
