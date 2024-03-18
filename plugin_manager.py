@@ -43,7 +43,6 @@ class PluginManager:
         except UnicodeDecodeError as e:
             print(f"Error decoding plugin.json: {e}")
             return  # エラー時は処理を中断
-
         sys.path.append(plugin_dir)
         plugin_module = importlib.import_module(plugin_info["main_module"])
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
@@ -68,7 +67,8 @@ class PluginManager:
         )
         app_container_cmp = self.__ui_manager.get_component("app_container")
         app_title = plugin_info["name"]
-        app_container_instance = app_container_cmp(app_title, clickable_image, "#ffffff" if "system" not in plugin_dir else "#657564")
+        app_version = "Version: " + plugin_info["version"]
+        app_container_instance = app_container_cmp(app_title, app_version, clickable_image, "#ffffff" if "system" not in plugin_dir else "#657564")
         app_container_widget = app_container_instance.get_widget()
 
         if "system" in plugin_dir:
