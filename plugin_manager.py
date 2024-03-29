@@ -68,7 +68,7 @@ class PluginManager:
         app_container_cmp = self.__ui_manager.get_component("app_container")
         app_title = plugin_info["name"]
         app_version = "Version: " + plugin_info["version"]
-        app_container_instance = app_container_cmp(app_title, app_version, clickable_image, "#ffffff" if "system" not in plugin_dir else "#657564")
+        app_container_instance = app_container_cmp(app_title, app_version, clickable_image, "#ffffff" if "system" not in plugin_dir else "#20b2aa")
         app_container_widget = app_container_instance.get_widget()
 
         if "system" in plugin_dir:
