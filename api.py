@@ -1,10 +1,10 @@
 import hashlib
 import os
 from openai import AzureOpenAI, OpenAI
-from langchain.vectorstores import Qdrant
+from langchain_community.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
-from langchain.embeddings import AzureOpenAIEmbeddings
+from langchain_community.embeddings import AzureOpenAIEmbeddings
 
 class API:
 
