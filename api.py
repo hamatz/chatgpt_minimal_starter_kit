@@ -5,11 +5,15 @@ from langchain_community.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from langchain_community.embeddings import AzureOpenAIEmbeddings
+from PyPDF2 import PdfReader
 
 class API:
 
     def __init__(self, system_api):
         self.__system_api = system_api
+
+    def get_pdf_reader(self, target_file) -> PdfReader:
+        return PdfReader(target_file)
 
     def get_chat_gpt_instance(self) -> OpenAI:
         openai_token_dict = self.__system_api.load_system_dict("System_Settings", "OpenAI_Token")
