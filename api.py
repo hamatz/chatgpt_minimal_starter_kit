@@ -5,6 +5,7 @@ from langchain_community.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from langchain_community.embeddings import AzureOpenAIEmbeddings
+from langchain_community.chat_models.azure_openai import AzureChatOpenAI
 from PyPDF2 import PdfReader
 
 class API:
@@ -44,6 +45,25 @@ class API:
                 api_key=my_azure_token,
         )
         return chat_client
+    
+    def get_azure_chat_openai_instance(self, temperature) -> AzureChatOpenAI:
+        azure_token_dict = self.__system_api.load_system_dict("System_Settings", "Azure_Token")
+        my_azure_encrypted_token =azure_token_dict.get("api_key").get("value")
+        my_azure_token = self.__system_api.decrypt_system_data(my_azure_encrypted_token)
+        azure_baseurl_dict = self.__system_api.load_system_dict("System_Settings", "Azure_base_url")
+        my_azure_encrypted_baseurl =azure_baseurl_dict.get("api_base_url").get("value")
+        my_azure_baseurl = self.__system_api.decrypt_system_data(my_azure_encrypted_baseurl)
+        azure_api_version_dict = self.__system_api.load_system_dict("System_Settings", "Azure_API_Version")
+        azure_api_version =azure_api_version_dict.get("api_version").get("value")
+        azure_deployment_dict = self.__system_api.load_system_dict("System_Settings", "Azure_Deployment_name")
+        my_azure_deployment_name =azure_deployment_dict.get("deployment_name").get("value")
+        azure_chat_openai_client = AzureChatOpenAI(azure_endpoint=my_azure_baseurl,
+                openai_api_version=azure_api_version,
+                deployment_name=my_azure_deployment_name,
+                openai_api_key=my_azure_token,
+                temperature = temperature,
+                streaming=True)
+        return azure_chat_openai_client
     
     def get_my_azure_deployment_name(self) -> str:
         azure_deployment_dict = self.__system_api.load_system_dict("System_Settings", "Azure_Deployment_name")
