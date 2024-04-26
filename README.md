@@ -81,6 +81,9 @@ CraftForgeは、オープンソースのエコシステムを通じて、コラ�
   pip install openai
   pip install langchain
   pip install qdrant_client
+  pip install tiktoken
+  pip install pypdf2
+  pip install pyinstaller
   ```
 
 ### Installation
@@ -94,6 +97,26 @@ CraftForgeは、オープンソースのエコシステムを通じて、コラ�
    ```sh
    flet run app.py
    ```
+
+### Build as exe file
+
+1. Build the app
+   ```sh
+   chmod +x build_on_mac.sh
+   ./build_on_mac.sh
+   or
+   ./build_on_win.ps1
+   ```
+2. hidden import 等を解決した形でビルドしなおしたい場合
+   ```sh
+   pyinstaller app.spec --clean
+   ```
+
+
+### 関連ドキュメント
+
+- [プラグイン開発者向けマニュアル](https://github.com/hamatz/chatgpt_minimal_starter_kit/blob/main/doc/developer_manual.md)
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
