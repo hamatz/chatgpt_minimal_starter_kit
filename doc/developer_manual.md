@@ -159,6 +159,57 @@ def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
 
 これらの情報を踏まえて、プラグインの開発を進めてください。不明な点や問題がある場合は、公式ドキュメントやコミュニティフォーラムを参照するか、CraftForgeの開発チームにお問い合わせください。
 
+### 4.3 APIを利用したプラグイン開発について
+
+CraftForgeでは、プラグイン開発者がセンシティブな情報を直接扱わなくても済むように、APIを通じて各種機能を提供しています。特に、外部サービスとの連携が必要な場合、APIを介することで、トークンやデプロイメント情報などの機密情報をプラグイン内で持つ必要がなくなります。
+
+以下は、`SampleChat`プラグインの一部を抜粋したコードです。このプラグインでは、OpenAIとAzure OpenAIのAPIを利用してチャットアプリを作成しています。
+
+```python
+class SampleChat(PluginInterface):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
+        # ...
+
+        def set_gpt_client() -> None:
+            if self.my_service == "OpenAI":
+                self.chat_client = api.get_chat_gpt_instance()
+                self.my_gpt_model = api.get_openai_gpt_model_name()
+            elif self.my_service == "Azure":
+                self.chat_client = api.get_azure_gpt_instance()
+                self.my_azure_deployment_name = api.get_my_azure_deployment_name()
+
+        # ...
+```
+
+上記のコードでは、`api`オブジェクトを使用して、OpenAIとAzure OpenAIのインスタンスを取得しています。`api.get_chat_gpt_instance()`メソッドは、OpenAIのインスタンスを返し、`api.get_azure_gpt_instance()`メソッドは、Azure OpenAIのインスタンスを返します。これらのメソッドは、内部でトークンやデプロイメント情報を解決し、認証済みのインスタンスを返します。
+
+プラグイン開発者は、これらのメソッドを呼び出すだけで、セキュアにAPIを利用することができます。トークンやデプロイメント名などの機密情報は、CraftForgeのシステム設定で一元管理されており、プラグインがアクセスすることはできません。
+
+以下は、`api`オブジェクトが提供するメソッドの一部です。
+
+- `get_chat_gpt_instance()`: OpenAIのインスタンスを取得します。
+- `get_openai_gpt_model_name()`: OpenAIで使用するGPTモデルの名前を取得します。
+- `get_azure_gpt_instance()`: Azure OpenAIのインスタンスを取得します。
+- `get_my_azure_deployment_name()`: Azure OpenAIで使用するデプロイメント名を取得します。
+
+これらのメソッドを使用することで、プラグイン開発者は機密情報を意識することなく、安全にAPIを利用できます。
+
+また、`api`オブジェクトは、他にも以下のような機能を提供しています。
+
+- ファイルの読み込み（`get_pdf_reader()`など）
+- プラグイン自身が管理するデータの暗号化と復号化（`save_my_content_key()`、`load_my_content_key()`など）
+- ベクトルデータベースの利用（`load_qdrant_for_azure()`など）
+
+これらの機能を活用することで、プラグイン開発者はより高度なアプリケーションを開発することができます。
+
+APIを利用したプラグイン開発には、以下のようなメリットがあります。
+
+1. 機密情報を直接扱う必要がなく、セキュリティリスクを軽減できる。
+2. CraftForgeのシステム設定で一元管理された情報を利用できるため、設定の変更がプラグインに即時反映される。
+3. 複雑な認証処理やエラーハンドリングを個別に実装する必要がなく、開発の手間が削減できる。
+
+APIを活用することで、プラグイン開発者はセキュアかつ効率的にアプリケーションを開発できます。
+
 ## 5. プラグインのパッケージング
 
 ### 5.1 プラグインのZIPファイル化
