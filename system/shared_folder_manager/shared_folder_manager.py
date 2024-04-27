@@ -20,12 +20,15 @@ class SharedFolderManager(SystemPluginInterface):
         page.clean()
 
         self.page = page
+        self.page_back_func = function_to_top_page
         self.plugin_dir = plugin_dir_path
+        self.api = api
 
         def go_back_to_home(e):
-            page.overlay.remove(self.bottom_sheet)
-            page.floating_action_button = None
-            function_to_top_page()
+            if hasattr(self, 'bottom_sheet') and self.bottom_sheet in self.page.overlay:
+                self.page.overlay.remove(self.bottom_sheet)
+            self.page.floating_action_button = None
+            self.page_back_func()
 
         my_header_cmp = self.ui_manager.get_component("simple_header2")
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
@@ -55,10 +58,10 @@ class SharedFolderManager(SystemPluginInterface):
 
             def revoke_permission(plugin_name):
                 self.revoke_permission(folder_id, plugin_name)
-                bottom_sheet.open = False
-                bottom_sheet.update()
-                load_shared_folders()  # リストを更新
-                page.update()  # ページを更新
+                self.bottom_sheet.open = False
+                self.bottom_sheet.update()
+                self.page.update()
+                self.load(self.page, self.page_back_func, self.plugin_dir, self.api)
 
             permission_dropdown = ft.Dropdown(
                 label="Permission",
@@ -207,6 +210,7 @@ class SharedFolderManager(SystemPluginInterface):
             icon=ft.icons.ADD, on_click=fab_pressed, bgcolor=ft.colors.WHITE30,
         )
         page.update()
+        
 
     def create_shared_folder(self, folder_name: str, owner_plugin: str, folder_path: str) -> str:
         # 共有フォルダの作成
@@ -233,6 +237,8 @@ class SharedFolderManager(SystemPluginInterface):
                 # ダイアログを閉じる
                 self.page.dialog.open = False
                 self.page.update()
+                self.page.clean()
+                self.load(self.page, self.page_back_func, self.plugin_dir,self.api)
 
         # ディレクトリ選択ダイアログを表示
         dialog = ft.FilePicker(on_result=on_directory_selected)
