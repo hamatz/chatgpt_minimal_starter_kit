@@ -49,7 +49,7 @@ class SharedFolderManager(SystemPluginInterface):
             permissions = folder_info["permissions"]
 
             def grant_permission(e):
-                permission = permission_dropdown.value
+                permission = "write"
                 self.grant_permission(folder_id, permission)
                 bottom_sheet.open = False
                 bottom_sheet.update()
@@ -62,16 +62,16 @@ class SharedFolderManager(SystemPluginInterface):
                 self.bottom_sheet.update()
                 self.page.update()
                 self.load(self.page, self.page_back_func, self.plugin_dir, self.api)
-
+            #事実上、何を選択してもフォルダパスを知った後は何でもできるので、現状は"write"で固定しておく
             permission_dropdown = ft.Dropdown(
                 label="Permission",
                 options=[
-                    ft.dropdown.Option("read"),
+                    #ft.dropdown.Option("read"),
                     ft.dropdown.Option("write"),
-                    ft.dropdown.Option("execute"),
+                    #ft.dropdown.Option("execute"),
                 ],
             )
-            grant_button = ft.ElevatedButton(text="Grant", on_click=grant_permission)
+            grant_button = ft.ElevatedButton(text="アクセス許可するプラグインを選択する", on_click=grant_permission)
 
             permissions_view = ft.Column([])
             for plugin_name, permission_data in permissions.items():
