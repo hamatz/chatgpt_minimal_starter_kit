@@ -19,8 +19,8 @@ class SharedFolderManager(SystemPluginInterface):
     def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str, api):
         page.clean()
 
-        self.page = page  # インスタンス変数に格納
-        self.plugin_dir = plugin_dir_path  # インスタンス変数に格納
+        self.page = page
+        self.plugin_dir = plugin_dir_path
 
         def go_back_to_home(e):
             page.overlay.remove(self.bottom_sheet)
@@ -50,7 +50,6 @@ class SharedFolderManager(SystemPluginInterface):
                 self.grant_permission(folder_id, permission)
                 bottom_sheet.open = False
                 bottom_sheet.update()
-                page.clean()
                 load_shared_folders()  # リストを更新
                 page.update()  # ページを更新
 
@@ -58,7 +57,6 @@ class SharedFolderManager(SystemPluginInterface):
                 self.revoke_permission(folder_id, plugin_name)
                 bottom_sheet.open = False
                 bottom_sheet.update()
-                page.clean()
                 load_shared_folders()  # リストを更新
                 page.update()  # ページを更新
 
@@ -123,10 +121,10 @@ class SharedFolderManager(SystemPluginInterface):
 
                 content_container = ft.Column([])
 
-                for plugin_name, permission in permissions.items():
+                for plugin_name, permission_data in permissions.items():
                     list_tile = ft.ListTile(
                         title=ft.Text(plugin_name),
-                        subtitle=ft.Text(permission),
+                        subtitle=ft.Text(permission_data["permission"]),
                     )
                     content_container.controls.append(list_tile)
 
@@ -156,15 +154,31 @@ class SharedFolderManager(SystemPluginInterface):
             def create_folder(e):
                 folder_name = new_folder_name.value
                 owner_plugin = new_folder_owner.value
-                self.create_shared_folder(folder_name, owner_plugin)
-                bottom_sheet.open = False
-                bottom_sheet.update()
-                page.clean()
-                load_shared_folders()  # リストを更新
-                page.update()  # ページを更新
+                folder_path = folder_picker.value
+                if folder_name and owner_plugin and folder_path:
+                    self.create_shared_folder(folder_name, owner_plugin, folder_path)
+                    bottom_sheet.open = False
+                    bottom_sheet.update()
+                    page.clean()
+                    load_shared_folders()  # リストを更新
+                    page.update()  # ページを更新
 
             new_folder_name = ft.TextField(label="Folder Name")
             new_folder_owner = ft.TextField(label="Owner Plugin")
+            folder_picker = ft.TextField(label="Folder Path", read_only=True, on_focus=lambda _: pick_folder())
+
+            def pick_folder():
+                dialog = ft.FilePicker(on_result=on_folder_selected)
+                page.overlay.append(dialog)
+                page.update()
+                dialog.get_directory_path()
+
+            def on_folder_selected(e: ft.FilePickerResultEvent):
+                if e.path:
+                    folder_picker.value = e.path
+                    page.overlay.pop()
+                    page.update()
+
             create_button = ft.ElevatedButton(text="Create", on_click=create_folder)
 
             bottom_sheet = ft.BottomSheet(
@@ -173,6 +187,7 @@ class SharedFolderManager(SystemPluginInterface):
                         [
                             new_folder_name,
                             new_folder_owner,
+                            folder_picker,
                             create_button,
                         ],
                         tight=True,
@@ -193,13 +208,14 @@ class SharedFolderManager(SystemPluginInterface):
         )
         page.update()
 
-    def create_shared_folder(self, folder_name: str, owner_plugin: str) -> str:
+    def create_shared_folder(self, folder_name: str, owner_plugin: str, folder_path: str) -> str:
         # 共有フォルダの作成
         folder_id = str(uuid.uuid4())
         # システム設定に共有フォルダの情報を保存
         self.system_api.save_system_dict("SharedFolderManager", folder_id, {
             "name": folder_name,
             "owner": owner_plugin,
+            "path": folder_path,
             "permissions": {}
         })
         return folder_id
