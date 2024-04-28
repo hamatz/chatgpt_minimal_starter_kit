@@ -12,9 +12,26 @@ CraftForgeのプラグインは、以下の要素で構成されています。
 - 定義ファイル（plugin.json）
 - アイコン画像ファイル
 
-プラグインは、`PluginInterface`を実装したPythonクラスとして作成されます。システムプラグインは、`SystemPluginInterface`を実装し、特権APIにアクセスすることができます。
+プラグインは、`PluginInterface`を実装したPythonクラスとして作成されます。システムプラグインは、`SystemPluginInterface`を実装し、特権APIにアクセスすることができます
+
+どちらもシングルトンで実装されることを想定しています。従いまして、以下のような宣言から始まることになります。
+
+```python
+class SamplePlugin(PluginInterface):
+
+    _instance = None
+    
+    def __new__(cls, ui_manager):
+        if cls._instance is None:
+            cls._instance = super(SamplePlugin, cls).__new__(cls)
+            # 新しいインスタンスの初期化
+            cls._instance.ui_manager = ui_manager
+        return cls._instance
+```
 
 プラグインは、ZIP形式でパッケージ化され、CraftForgeにインストールされます。インストールされたプラグインは、CraftForgeのホーム画面に表示され、ユーザーはプラグインを選択して起動することができます。
+
+ただし、システムプラグインにはインストール用のUIは用意されておらず、CraftForgeの実行ファイルが配置されているのと同じディレクトリに置かれた`system`ディレクトリの配下に置かれた場合にのみ、特権APIを利用可能となり、UI操作では削除不可能のプラグインとして扱われるようになります。
 
 ## 2. 開発環境のセットアップ
 

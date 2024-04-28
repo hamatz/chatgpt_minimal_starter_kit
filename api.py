@@ -120,3 +120,17 @@ class API:
             collection_name=collection_name, 
             embeddings=AzureOpenAIEmbeddings(openai_api_type="azure", api_key=my_azure_token, base_url=my_azure_baseurl, api_version=azure_api_version, deployment=my_azure_embeddings_deployment_name)
         )
+
+    def getSharedFolderPath(self, folder_name: str, owner_plugin: str, accessing_plugin: str) -> str:
+        shared_folders = self.__system_api.load_system_dict("SharedFolderManager", owner_plugin)
+        if shared_folders and folder_name in shared_folders:
+            folder_info = shared_folders[folder_name]
+            permissions = folder_info["permissions"]
+            if accessing_plugin in permissions:
+                # アクセス権限を確認
+                folder_data = permissions[accessing_plugin]
+                folder_path = folder_data["path"]
+                permission = folder_data["permission"]
+                if permission in ["read", "write", "execute"]:
+                    return folder_path
+        raise PermissionError("Access denied.")
