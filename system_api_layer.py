@@ -9,6 +9,27 @@ class SystemAPI:
     def get_system_dicts_all(self) -> dict:
         """システム設定データの辞書を取得します。"""
         return self.__sys_file_ctrl.get_system_dicts_all()
+    
+    def set_debug_mode(self, debug_mode: bool) -> None:
+        """
+        デバッグモードを設定します。
+        
+        Args:
+            debug_mode (bool): デバッグモードを有効にする場合は True、無効にする場合は False。
+        """
+        self.__sys_file_ctrl.save_system_dict("CraftForgeBase", "debug_mode", {"value": debug_mode})
+
+    def is_debug_mode(self) -> bool:
+        """
+        現在のデバッグモードの状態を取得します。
+        
+        Returns:
+            bool: デバッグモードが有効な場合は True、無効な場合は False。
+        """
+        debug_mode = self.__sys_file_ctrl.load_system_dict("CraftForgeBase", "debug_mode")
+        if debug_mode is None:
+            return False
+        return debug_mode.get("value", False)
 
     def save_system_dict(self, app_name: str, prop_name: str, data: dict) -> bool:
         """指定されたアプリケーション名とプロパティ名に辞書データを保存します。"""

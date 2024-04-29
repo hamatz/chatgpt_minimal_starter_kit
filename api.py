@@ -13,6 +13,15 @@ class API:
     def __init__(self, system_api):
         self.__system_api = system_api
 
+    def is_debug_mode(self) -> bool:
+        """
+        現在のデバッグモードの状態を取得します。
+        
+        Returns:
+            bool: デバッグモードが有効な場合は True、無効な場合は False。
+        """
+        return self.__system_api.is_debug_mode()
+
     def get_pdf_reader(self, target_file) -> PdfReader:
         return PdfReader(target_file)
 
