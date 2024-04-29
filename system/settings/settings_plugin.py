@@ -27,8 +27,8 @@ class SettingsPlugin(SystemPluginInterface):
 
         def toggle_debug_mode(e):
             debug_mode = e.control.value
-            self.system_api.set_debug_mode(debug_mode)
-            self.settings_info_dict = self.system_api.get_system_dicts_all()
+            self.system_api.debug.set_debug_mode(debug_mode)
+            self.settings_info_dict = self.system_api.settings.get_system_dicts_all()
             page.update()
 
         def reset_page_setting_and_close():
@@ -62,12 +62,12 @@ class SettingsPlugin(SystemPluginInterface):
                 "value": description_value,
                 "ui_type": "description",
             }
-            self.system_api.save_system_dict(MY_APP_NAME, setting_name, {
+            self.system_api.settings.save_system_dict(MY_APP_NAME, setting_name, {
                 element_name: new_setting,
                 "description": description,
                 "is_encrypted": {"value": is_encrypted, "ui_type": "toggle"}
             })
-            self.settings_info_dict = self.system_api.get_system_dicts_all()
+            self.settings_info_dict = self.system_api.settings.get_system_dicts_all()
             return True
 
         def change_edit_mode(e: ft.ControlEvent, tile: ft.ListTile) -> None:
@@ -83,18 +83,18 @@ class SettingsPlugin(SystemPluginInterface):
             target_dict = settings_info_dict.get(service_name, {})
             edited_data = tile.title.value
             if is_secure:
-                target_data = self.system_api.encrypt_system_data(edited_data)
+                target_data = self.system_api.crypto.encrypt_system_data(edited_data)
                 tile.title.value = target_data  # UI上で暗号化された値を表示する必要があるかどうかは要検討。今のところは一度設定したら見えない方が安全なのでは？という方針
             else:
                 target_data = edited_data
             ui_type = "description" if prop_name == "description" else "text"
             target_dict[prop_name] = {"value": target_data, "ui_type": ui_type}
-            self.system_api.save_system_dict(MY_APP_NAME, service_name, target_dict)
-            self.settings_info_dict = self.system_api.get_system_dicts_all()
+            self.system_api.settings.save_system_dict(MY_APP_NAME, service_name, target_dict)
+            self.settings_info_dict = self.system_api.settings.get_system_dicts_all()
             change_edit_mode(e, tile)  # 編集モードを切り替えて編集不可状態に戻す
 
         def load_system_info():
-            system_data_dict = self.system_api.get_system_dicts_all()
+            system_data_dict = self.system_api.settings.get_system_dicts_all()
             self.settings_info_dict = system_data_dict.get(MY_APP_NAME, {})
             # settings_info_dictが空の場合、初期設定用のJSONデータを読み込む
             if not self.settings_info_dict:
@@ -104,7 +104,7 @@ class SettingsPlugin(SystemPluginInterface):
                     for service_name, settings in initial_settings.items():
                         title = service_name
                         setting_info = settings
-                        self.system_api.save_system_dict(MY_APP_NAME, service_name, setting_info)
+                        self.system_api.settings.save_system_dict(MY_APP_NAME, service_name, setting_info)
                     self.settings_info_dict = initial_settings
 
             my_system_info = system_data_dict.get(MY_SYSTEM_NAME, {}).get("app_info", {})
@@ -120,7 +120,7 @@ class SettingsPlugin(SystemPluginInterface):
                 title=ft.Text("CraftForge" + "   " + my_version_info),
             )
             page.add(title_bar)
-            debug_mode_toggle = ft.Switch(label="Debug Mode", value=self.system_api.is_debug_mode(), on_change=toggle_debug_mode)
+            debug_mode_toggle = ft.Switch(label="Debug Mode", value=self.system_api.debug.is_debug_mode(), on_change=toggle_debug_mode)
             debug_toggle_row = ft.Row(spacing=5, controls=[debug_mode_toggle], alignment=ft.MainAxisAlignment.END)
             page.add(debug_toggle_row)
 
