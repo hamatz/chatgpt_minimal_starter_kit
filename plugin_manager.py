@@ -101,8 +101,9 @@ class PluginManager:
                     zip_ref.extractall(plugin_dir)
             # セキュリティスキャンを実行
             if not CodeSecurityScanner.scan_for_forbidden_functions(plugin_dir):
+                 self.api.logger.error("Security check failed: Forbidden functions found in the plugin code.")
                  raise Exception("Security check failed: Forbidden functions found in the plugin code.")
-            
+            self.api.logger.info(f"Security check passed for plugin: {plugin_dir}")
             self._load_plugin(plugin_dir, container)
 
         except Exception as e:
