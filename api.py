@@ -14,7 +14,7 @@ class API:
     def __init__(self, system_api):
         self.__system_api = system_api
         self.logger = self.Logger(system_api)
-        self.content_km = self.ContentKeyManager(system_api)
+        self.content_key = self.ContentKeyManager(system_api)
         self.ai = self.AIUtils(system_api)
         self.files = self.FileUtils(system_api)
 
