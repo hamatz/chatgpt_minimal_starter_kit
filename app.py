@@ -17,8 +17,8 @@ from ui_components.app_container import AppContainer
 
 MY_SYSTEM_NAME = "CraftForgeBase"
 SYSTEM_FILENAME = "system_shared_data.json"
-VERSION = "0.1.5"
-BUILD_NUMBER = "3"
+VERSION = "0.1.6"
+BUILD_NUMBER = "4"
 MY_KEY_FILENAME = "my_app_info.json"
 HAKONIWA = False
 
@@ -50,7 +50,7 @@ class CraftForgeBase:
             action="Alright!",
         )
         my_header_cmp = self.ui_manager.get_component("simple_header")
-        my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.1.5", "#20b2aa")
+        my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.1.6", "#20b2aa")
         my_header_widget = my_header_instance.get_widget()
         my_footer_cmp = self.ui_manager.get_component("simple_footer")
         my_footer_instance = my_footer_cmp("@hamatz", "#20b2aa")
