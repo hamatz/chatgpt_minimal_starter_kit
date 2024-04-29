@@ -41,7 +41,7 @@ class PluginManager:
             with open(os.path.join(plugin_dir, "plugin.json"), 'r', encoding='utf-8') as f:
                 plugin_info = json.load(f)
         except UnicodeDecodeError as e:
-            print(f"Error decoding plugin.json: {e}")
+            self.api.logger.error(f"Error decoding plugin.json: {e}")
             return  # エラー時は処理を中断
         sys.path.append(plugin_dir)
         plugin_module = importlib.import_module(plugin_info["main_module"])
@@ -57,7 +57,7 @@ class PluginManager:
             with open(icon_path, "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
         except Exception as e:
-            print(f"Error loading or encoding icon: {e}")
+            self.api.logger.error(f"Error loading or encoding icon: {e}")
             encoded_string = ""  # エラー時はエンコード済み文字列を空に
 
         app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
@@ -106,7 +106,7 @@ class PluginManager:
             self._load_plugin(plugin_dir, container)
 
         except Exception as e:
-            print(f"Plugin installation failed: {e}")
+            self.api.logger.error(f"Plugin installation failed: {e}")
             # インストールに失敗した場合は展開したフォルダを削除
             shutil.rmtree(plugin_dir, ignore_errors=True)
             return
@@ -125,11 +125,11 @@ class PluginManager:
         self.page.update()
 
     def delete_plugin(self, del_target: list) -> None:
-        print("delete_plugin was called!")
-        print(del_target)
+        self.api.logger.info("delete_plugin was called!")
+        self.api.logger.info(del_target)
         plugin_dir = del_target[0]
         unique_key = del_target[1]
-        print(unique_key)
+        self.api.logger.info(unique_key)
 
         def on_rm_error(func, path, exc_info) -> None:
             import stat
@@ -143,7 +143,7 @@ class PluginManager:
             if ui_element in self.myapp_container.controls:
                 self.myapp_container.controls.remove(ui_element)
             else:
-                print("no ui element which matches unique_key")
+                self.api.logger.error("no ui element which matches unique_key")
         # 削除確認ダイアログを閉じる
         self.page.dialog.open = False
         self.page.update()
@@ -152,7 +152,7 @@ class PluginManager:
         self.plugin_dict = {}
         target_list = [filename for filename in os.listdir(self.plugin_folder_path) if not filename.startswith('.')]
         for plugin_name in target_list:
-            print(plugin_name)
+            self.api.logger.info(plugin_name)
             plugin_dir = os.path.join(self.plugin_folder_path, plugin_name)
             if os.path.isdir(plugin_dir):
                 self._load_plugin(plugin_dir, container)
@@ -160,7 +160,7 @@ class PluginManager:
     def load_system_plugins(self, container: ft.Container) -> None:
         target_list = [filename for filename in os.listdir(self.system_plugin_folder_path) if not filename.startswith('.')]
         for plugin_name in target_list:
-            print(plugin_name)
+            self.api.logger.info(plugin_name)
             plugin_dir = os.path.join(self.system_plugin_folder_path, plugin_name)
             if os.path.isdir(plugin_dir):
                 self._load_plugin(plugin_dir, container)

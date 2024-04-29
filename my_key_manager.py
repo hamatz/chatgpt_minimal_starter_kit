@@ -106,7 +106,6 @@ class MyKeyManager:
             decrypted_pass_phrase_hash = hashlib.sha256(decrypted_pass_phrase).hexdigest() 
             if decrypted_pass_phrase_hash != content_key_hash:
                 self.failed_attempts += 1
-                print("password error")
                 self.__page.snack_bar = ft.SnackBar(ft.Text(f"パスワードエラーです {self.failed_attempts}/5"))
                 self.__page.snack_bar.open = True
                 self.__page.update()
