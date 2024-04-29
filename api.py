@@ -26,7 +26,7 @@ class API:
             bool: デバッグモードが有効な場合は True、無効な場合は False。
         """
         return self.__system_api.debug.is_debug_mode()
-    
+
     class Logger:
         def __init__(self, system_api):
             self.__system_api = system_api
@@ -52,18 +52,42 @@ class API:
             self.__logger.addHandler(console_handler)
 
         def debug(self, message):
+            """
+            デバッグレベルのログメッセージを出力します。
+            
+            Args:
+                message (str): ログメッセージ。
+            """
             if self.__system_api.debug.is_debug_mode():
                 self.__logger.debug(message)
 
         def info(self, message):
+            """
+            Infoレベルのログメッセージを出力します。
+            
+            Args:
+                message (str): ログメッセージ。
+            """
             if self.__system_api.debug.is_debug_mode():
                 self.__logger.info(message)
 
         def warning(self, message):
+            """
+            警告レベルのログメッセージを出力します。
+            
+            Args:
+                message (str): ログメッセージ。
+            """
             if self.__system_api.debug.is_debug_mode():
                 self.__logger.warning(message)
 
         def error(self, message):
+            """
+            エラーレベルのログメッセージを出力します。
+            
+            Args:
+                message (str): ログメッセージ。
+            """
             if self.__system_api.debug.is_debug_mode():
                 self.__logger.error(message)
 
@@ -71,7 +95,18 @@ class API:
         def __init__(self, system_api):
             self.__system_api = system_api
 
-        def save(self, app_instance, content_key:str, caller_app_dir:str) -> bool:
+        def save_my_content_key(self, app_instance, content_key:str, caller_app_dir:str) -> bool:
+            """
+            コンテンツキーを保存します。
+            
+            Args:
+                app_instance (object): 呼び出し元プラグインのインスタンス。
+                content_key (str): 保存するコンテンツキー。
+                caller_app_dir (str): 呼び出し元プラグインのディレクトリパス。
+            
+            Returns:
+                bool: 保存に成功した場合は True、失敗した場合は False。
+            """
             app_class_name = app_instance.__class__.__name__
             target_app_name = app_class_name + caller_app_dir
             target_app_hashed_name = hashlib.sha256(target_app_name.encode()).hexdigest()
@@ -81,7 +116,17 @@ class API:
                              'app_dir' : encrypted_app_path}
             return self.__system_api.settings.save_system_dict(target_app_hashed_name, "content_key",  key_data_dict)
 
-        def load(self, app_instance, caller_app_dir:str) -> str:
+        def load_my_content_key(self, app_instance, caller_app_dir:str) -> str:
+            """
+            コンテンツキーを読み込みます。
+            
+            Args:
+                app_instance (object): 呼び出し元プラグインのインスタンス。
+                caller_app_dir (str): 呼び出し元プラグインのディレクトリパス。
+            
+            Returns:
+                str: 読み込んだコンテンツキー。認証エラーの場合は "Auth Error"。
+            """
             app_class_name = app_instance.__class__.__name__
             target_app_name = app_class_name + caller_app_dir
             target_app_hashed_name = hashlib.sha256(target_app_name.encode()).hexdigest()
@@ -98,6 +143,12 @@ class API:
             self.__system_api = system_api
 
         def get_chat_gpt_instance(self) -> OpenAI:
+            """
+            OpenAIのインスタンスを取得します。
+            
+            Returns:
+                OpenAI: OpenAIのインスタンス。
+            """
             openai_token_dict = self.__system_api.settings.load_system_dict("System_Settings", "OpenAI_Token")
             my_openai_encrypted_token =openai_token_dict.get("api_key").get("value")
             my_openai_token = self.__system_api.crypto.decrypt_system_data(my_openai_encrypted_token)
@@ -105,6 +156,12 @@ class API:
             return chat_client
 
         def get_openai_gpt_model_name(self) -> str:
+            """
+            OpenAIで使用するGPTモデルの名前を取得します。
+            
+            Returns:
+                str: GPTモデルの名前。
+            """
             openai_model_dict = self.__system_api.settings.load_system_dict("System_Settings", "GPT_model_name")
             my_openai_model_name =openai_model_dict.get("model_name").get("value")
             if not my_openai_model_name:
@@ -112,6 +169,12 @@ class API:
             return my_openai_model_name
 
         def get_azure_gpt_instance(self) -> AzureOpenAI:
+            """
+            Azure OpenAIのインスタンスを取得します。
+            
+            Returns:
+                AzureOpenAI: Azure OpenAIのインスタンス。
+            """
             azure_token_dict = self.__system_api.settings.load_system_dict("System_Settings", "Azure_Token")
             my_azure_encrypted_token =azure_token_dict.get("api_key").get("value")
             my_azure_token = self.__system_api.crypto.decrypt_system_data(my_azure_encrypted_token)
@@ -128,6 +191,15 @@ class API:
             return chat_client
 
         def get_azure_chat_openai_instance(self, temperature) -> AzureChatOpenAI:
+            """
+            Azure OpenAIのチャット用インスタンスを取得します。
+            
+            Args:
+                temperature (float): 温度パラメータ。
+            
+            Returns:
+                AzureChatOpenAI: Azure OpenAIのチャット用インスタンス。
+            """
             azure_token_dict = self.__system_api.settings.load_system_dict("System_Settings", "Azure_Token")
             my_azure_encrypted_token =azure_token_dict.get("api_key").get("value")
             my_azure_token = self.__system_api.crypto.decrypt_system_data(my_azure_encrypted_token)
@@ -147,11 +219,30 @@ class API:
             return azure_chat_openai_client
 
         def get_my_azure_deployment_name(self) -> str:
+            """
+            Azure OpenAIで使用するデプロイメント名を取得します。
+            
+            Returns:
+                str: デプロイメント名。
+            """
             azure_deployment_dict = self.__system_api.settings.load_system_dict("System_Settings", "Azure_Deployment_name")
             my_azure_deployment_name =azure_deployment_dict.get("deployment_name").get("value")
             return my_azure_deployment_name
 
         def load_qdrant_for_azure(self, app_path : str, qdrant_path : str, collection_name : str, vector_param_size : int, vector_param_distance : Distance):
+            """
+            Azure OpenAIのEmbeddingsを使用するQdrantのインスタンスを読み込みます。
+            
+            Args:
+                app_path (str): アプリケーションのパス。
+                qdrant_path (str): Qdrantのパス。
+                collection_name (str): コレクション名。
+                vector_param_size (int): ベクターのパラメータサイズ。
+                vector_param_distance (Distance): 距離メトリック。
+            
+            Returns:
+                Qdrant: Qdrantのインスタンス。
+            """
             my_qdrant_path = os.path.join(app_path,qdrant_path)
             if not os.path.exists(my_qdrant_path):
                 os.makedirs(my_qdrant_path)
@@ -185,9 +276,29 @@ class API:
             self.__system_api = system_api
 
         def get_pdf_reader(self, target_file) -> PdfReader:
+            """
+            PDFファイルを読み込むためPyPDF2のPdfReaderインスタンスを取得します。
+            
+            Args:
+                target_file (str): 対象のPDFファイルのパス。
+            
+            Returns:
+                PdfReader: PdfReaderインスタンス。
+            """
             return PdfReader(target_file)
 
         def get_shared_folder_path(self, folder_name: str, owner_plugin: str, accessing_plugin: str) -> str:
+            """
+            共有フォルダのパスを取得します。
+
+            Args:
+                folder_name (str): 共有フォルダの名前。
+                owner_plugin (str): 所有者プラグインの名前。
+                accessing_plugin (str): アクセス元プラグインの格納されているフォルダ名。
+
+            Returns:
+                str: 共有フォルダのパス。アクセス権がない場合は PermissionError が発生します。
+            """
             shared_folders = self.__system_api.settings.load_system_dict("SharedFolderManager", owner_plugin)
             if shared_folders and folder_name in shared_folders:
                 folder_info = shared_folders[folder_name]
