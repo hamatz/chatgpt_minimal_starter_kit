@@ -187,7 +187,7 @@ class API:
         def get_pdf_reader(self, target_file) -> PdfReader:
             return PdfReader(target_file)
 
-        def getSharedFolderPath(self, folder_name: str, owner_plugin: str, accessing_plugin: str) -> str:
+        def get_shared_folder_path(self, folder_name: str, owner_plugin: str, accessing_plugin: str) -> str:
             shared_folders = self.__system_api.settings.load_system_dict("SharedFolderManager", owner_plugin)
             if shared_folders and folder_name in shared_folders:
                 folder_info = shared_folders[folder_name]
@@ -200,5 +200,3 @@ class API:
                     if permission in ["read", "write", "execute"]:
                         return folder_path
             raise PermissionError("Access denied.")
-
-
