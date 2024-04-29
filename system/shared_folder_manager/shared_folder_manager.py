@@ -44,7 +44,7 @@ class SharedFolderManager(SystemPluginInterface):
         page.add(my_header_widget)
 
         def manage_permissions_dlg(folder_id):
-            folder_info = self.system_api.load_system_dict("SharedFolderManager", folder_id)
+            folder_info = self.system_api.settings.load_system_dict("SharedFolderManager", folder_id)
             folder_name = folder_info["name"]
             permissions = folder_info["permissions"]
 
@@ -106,7 +106,7 @@ class SharedFolderManager(SystemPluginInterface):
             page.update()
 
         def load_shared_folders():
-            shared_folders = self.system_api.get_system_dicts_all().get("SharedFolderManager", {})
+            shared_folders = self.system_api.settings.get_system_dicts_all().get("SharedFolderManager", {})
 
             scrollable_container = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO)
 
@@ -216,7 +216,7 @@ class SharedFolderManager(SystemPluginInterface):
         # 共有フォルダの作成
         folder_id = str(uuid.uuid4())
         # システム設定に共有フォルダの情報を保存
-        self.system_api.save_system_dict("SharedFolderManager", folder_id, {
+        self.system_api.settings.save_system_dict("SharedFolderManager", folder_id, {
             "name": folder_name,
             "owner": owner_plugin,
             "path": folder_path,
@@ -231,9 +231,9 @@ class SharedFolderManager(SystemPluginInterface):
                 # フォルダパスからプラグインのディレクトリ名を取得
                 plugin_name = os.path.basename(folder_path)
                 # 共有フォルダのアクセス権限を付与
-                folder_info = self.system_api.load_system_dict("SharedFolderManager", folder_id)
+                folder_info = self.system_api.settings.load_system_dict("SharedFolderManager", folder_id)
                 folder_info["permissions"][plugin_name] = {"path": folder_path, "permission": permission}
-                self.system_api.save_system_dict("SharedFolderManager", folder_id, folder_info)
+                self.system_api.settings.save_system_dict("SharedFolderManager", folder_id, folder_info)
                 # ダイアログを閉じる
                 self.page.dialog.open = False
                 self.page.update()
@@ -249,13 +249,13 @@ class SharedFolderManager(SystemPluginInterface):
 
     def revoke_permission(self, folder_id: str, plugin_name: str):
         # 共有フォルダのアクセス権限を取り消し
-        folder_info = self.system_api.load_system_dict("SharedFolderManager", folder_id)
+        folder_info = self.system_api.settings.load_system_dict("SharedFolderManager", folder_id)
         folder_info["permissions"].pop(plugin_name, None)
-        self.system_api.save_system_dict("SharedFolderManager", folder_id, folder_info)
+        self.system_api.settings.save_system_dict("SharedFolderManager", folder_id, folder_info)
 
     def access_shared_folder(self, folder_id: str, plugin_name: str) -> str:
         # 共有フォルダへのアクセス
-        folder_info = self.system_api.load_system_dict("SharedFolderManager", folder_id)
+        folder_info = self.system_api.settings.load_system_dict("SharedFolderManager", folder_id)
         if plugin_name in folder_info["permissions"]:
             return folder_info["permissions"][plugin_name]
         else:
