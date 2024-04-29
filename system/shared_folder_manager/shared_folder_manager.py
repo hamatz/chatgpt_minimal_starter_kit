@@ -111,9 +111,9 @@ class SharedFolderManager(SystemPluginInterface):
             scrollable_container = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO)
 
             panel = ft.ExpansionPanelList(
-                expand_icon_color=ft.colors.AMBER,
+                expand_icon_color=ft.colors.BLUE_GREY,
                 elevation=8,
-                divider_color=ft.colors.AMBER,
+                divider_color=ft.colors.BLUE_GREY,
                 controls=[],
             )
 

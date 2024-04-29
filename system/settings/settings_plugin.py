@@ -25,6 +25,12 @@ class SettingsPlugin(SystemPluginInterface):
         MY_APP_NAME = "System_Settings"
         page.clean()
 
+        def toggle_debug_mode(e):
+            debug_mode = e.control.value
+            self.system_api.set_debug_mode(debug_mode)
+            self.settings_info_dict = self.system_api.get_system_dicts_all()
+            page.update()
+
         def reset_page_setting_and_close():
             page.overlay.remove(self.bottom_sheet)
             page.floating_action_button = None
@@ -105,7 +111,6 @@ class SettingsPlugin(SystemPluginInterface):
             my_version = "Version  " + my_system_info.get("version", "不明")
             my_build_num = my_system_info.get("build_number", "不明")
             my_version_info = my_version + " (" + my_build_num + ")"
-
             app_icon_path = os.path.join(plugin_dir_path, "app_icon.png")
             with open(app_icon_path, "rb") as app_image_file:
                 encoded_image_string = base64.b64encode(app_image_file.read()).decode("utf-8")
@@ -115,13 +120,16 @@ class SettingsPlugin(SystemPluginInterface):
                 title=ft.Text("CraftForge" + "   " + my_version_info),
             )
             page.add(title_bar)
+            debug_mode_toggle = ft.Switch(label="Debug Mode", value=self.system_api.is_debug_mode(), on_change=toggle_debug_mode)
+            debug_toggle_row = ft.Row(spacing=5, controls=[debug_mode_toggle], alignment=ft.MainAxisAlignment.END)
+            page.add(debug_toggle_row)
 
             scrollable_container = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO)
 
             panel = ft.ExpansionPanelList(
-                expand_icon_color=ft.colors.AMBER,
+                expand_icon_color=ft.colors.BLUE_GREY,
                 elevation=8,
-                divider_color=ft.colors.AMBER,
+                divider_color=ft.colors.BLUE_GREY,
                 controls=[],
             )
             if self.settings_info_dict:
