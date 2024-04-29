@@ -1,5 +1,6 @@
 import hashlib
 import os
+import logging
 from openai import AzureOpenAI, OpenAI
 from langchain_community.vectorstores import Qdrant
 from qdrant_client import QdrantClient
@@ -12,6 +13,7 @@ class API:
 
     def __init__(self, system_api):
         self.__system_api = system_api
+        self.logger = self.Logger(system_api)
 
     def is_debug_mode(self) -> bool:
         """
@@ -21,6 +23,46 @@ class API:
             bool: デバッグモードが有効な場合は True、無効な場合は False。
         """
         return self.__system_api.is_debug_mode()
+    
+    class Logger:
+        def __init__(self, system_api):
+            self.__system_api = system_api
+            self.__logger = logging.getLogger("CraftForge")
+            self.__logger.setLevel(logging.DEBUG)
+
+            # ログファイルへの出力設定
+            log_file_path = "craftforge.log"  # ログファイルのパス
+            file_handler = logging.FileHandler(log_file_path)
+            file_handler.setLevel(logging.DEBUG)
+
+            # コンソールへの出力設定
+            console_handler = logging.StreamHandler()
+            console_handler.setLevel(logging.INFO)
+
+            # ログフォーマットの設定
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            file_handler.setFormatter(formatter)
+            console_handler.setFormatter(formatter)
+
+            # ロガーにハンドラを追加
+            self.__logger.addHandler(file_handler)
+            self.__logger.addHandler(console_handler)
+
+        def debug(self, message):
+            if self.__system_api.is_debug_mode():
+                self.__logger.debug(message)
+
+        def info(self, message):
+            if self.__system_api.is_debug_mode():
+                self.__logger.info(message)
+
+        def warning(self, message):
+            if self.__system_api.is_debug_mode():
+                self.__logger.warning(message)
+
+        def error(self, message):
+            if self.__system_api.is_debug_mode():
+                self.__logger.error(message)
 
     def get_pdf_reader(self, target_file) -> PdfReader:
         return PdfReader(target_file)
