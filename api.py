@@ -71,7 +71,7 @@ class API:
         def __init__(self, system_api):
             self.__system_api = system_api
 
-        def save_my_content_key(self, app_instance, content_key:str, caller_app_dir:str) -> bool:
+        def save(self, app_instance, content_key:str, caller_app_dir:str) -> bool:
             app_class_name = app_instance.__class__.__name__
             target_app_name = app_class_name + caller_app_dir
             target_app_hashed_name = hashlib.sha256(target_app_name.encode()).hexdigest()
@@ -81,7 +81,7 @@ class API:
                              'app_dir' : encrypted_app_path}
             return self.__system_api.settings.save_system_dict(target_app_hashed_name, "content_key",  key_data_dict)
 
-        def load_my_content_key(self, app_instance, caller_app_dir:str) -> str:
+        def load(self, app_instance, caller_app_dir:str) -> str:
             app_class_name = app_instance.__class__.__name__
             target_app_name = app_class_name + caller_app_dir
             target_app_hashed_name = hashlib.sha256(target_app_name.encode()).hexdigest()
