@@ -234,8 +234,8 @@ class API:
             Azure OpenAIのEmbeddingsを使用するQdrantのインスタンスを読み込みます。
             
             Args:
-                app_path (str): アプリケーションのパス。
-                qdrant_path (str): Qdrantのパス。
+                app_path (str): 呼び出し元プラグインのパス。
+                qdrant_path (str): Qdrantデータベース保存用のパス。
                 collection_name (str): コレクション名。
                 vector_param_size (int): ベクターのパラメータサイズ。
                 vector_param_distance (Distance): 距離メトリック。
