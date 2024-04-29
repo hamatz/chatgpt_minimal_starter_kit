@@ -61,11 +61,11 @@ class SampleChat(PluginInterface):
 
         def set_gpt_client() -> None:
             if self.my_service == "OpenAI":
-                self.chat_client = api.get_chat_gpt_instance()
-                self.my_gpt_model = api.get_openai_gpt_model_name()
+                self.chat_client = api.ai.get_chat_gpt_instance()
+                self.my_gpt_model = api.ai.get_openai_gpt_model_name()
             elif self.my_service == "Azure":
-                self.chat_client = api.get_azure_gpt_instance()
-                self.my_azure_deployment_name = api.get_my_azure_deployment_name()
+                self.chat_client = api.ai.get_azure_gpt_instance()
+                self.my_azure_deployment_name = api.ai.get_my_azure_deployment_name()
 
         def reset_page_setting_and_close():
             page.horizontal_alignment = ft.CrossAxisAlignment.START
