@@ -4,6 +4,7 @@ import sys
 import flet as ft
 from plugin_manager import PluginManager
 from my_key_manager import MyKeyManager
+from intent_conductor import IntentConductor
 from ui_component_manager import UIComponentManager
 from system_file_controller import SystemFileController
 from system_api_layer import SystemAPI
@@ -38,17 +39,18 @@ class CraftForgeBase:
         self.system_fc = SystemFileController(SYSTEM_FILENAME, base_dir)
         self.system_api = SystemAPI(self.mkm, self.system_fc)
         self.api = API(self.system_api)
-        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir, self.api)
+        self.intent_conductor = IntentConductor()
+        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir, self.api, self.intent_conductor)
         self.mkm.prompt_password_dialog()
 
     def show_main_page(self) -> None:
         def pick_file_and_install(e: ft.FilePickerResultEvent):
             self.pm.install_plugin(e, main_container)
 
-        self.page.appbase_toast =  ft.SnackBar(
-            content=ft.Text("appbase_toast"),
-            action="Alright!",
-        )
+        # self.page.appbase_toast =  ft.SnackBar(
+        #     content=ft.Text("appbase_toast"),
+        #     action="Alright!",
+        # )
         my_header_cmp = self.ui_manager.get_component("simple_header")
         my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.1.7", "#20b2aa")
         my_header_widget = my_header_instance.get_widget()

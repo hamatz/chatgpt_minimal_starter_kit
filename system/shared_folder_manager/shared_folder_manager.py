@@ -4,16 +4,18 @@ import flet as ft
 from interfaces.system_plugin_interface import SystemPluginInterface
 from ui_component_manager import UIComponentManager
 from system_api_layer import SystemAPI
+from intent_conductor import IntentConductor
 import uuid
 
 class SharedFolderManager(SystemPluginInterface):
     _instance = None
 
-    def __new__(cls, ui_manager: UIComponentManager, system_api: SystemAPI):
+    def __new__(cls, ui_manager: UIComponentManager, system_api: SystemAPI, intent_conductor: IntentConductor):
         if cls._instance is None:
             cls._instance = super(SharedFolderManager, cls).__new__(cls)
             cls._instance.ui_manager = ui_manager
             cls._instance.system_api = system_api
+            cls._instance.intent_conductor = intent_conductor
         return cls._instance
 
     def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str, api):
