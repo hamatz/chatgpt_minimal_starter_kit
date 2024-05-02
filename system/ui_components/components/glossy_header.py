@@ -1,9 +1,9 @@
 import flet as ft
 
 class GlossyHeader(ft.UserControl):
-    def __init__(self, title):
+    def __init__(self, **kwargs):
         super().__init__()
-        self.title = title
+        self.title = kwargs.get("title")
 
     def build(self):
         return ft.Container(

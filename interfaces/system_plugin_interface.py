@@ -1,8 +1,7 @@
 import abc
 
 class SystemPluginInterface(metaclass=abc.ABCMeta):
-    def __init__(self, ui_manager, system_api, intent_conductor):
-        self.ui_manager = ui_manager
+    def __init__(self, system_api, intent_conductor):
         self.system_api = system_api
         self.intent_conductor = intent_conductor
 

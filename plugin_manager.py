@@ -50,9 +50,9 @@ class PluginManager:
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
         # システムプラグインかどうかに基づき、インスタンスを作成
         if "system" in plugin_dir:
-            plugin_instance = plugin_class(self.__ui_manager, self.__system_api, self.intent_conductor)
+            plugin_instance = plugin_class(self.__system_api, self.intent_conductor)
         else:
-            plugin_instance = plugin_class(self.__ui_manager)
+            plugin_instance = plugin_class(self.intent_conductor)
         # アイコン画像の読み込みとエンコード
         try:
             icon_path = os.path.join(plugin_dir, plugin_info["icon"])

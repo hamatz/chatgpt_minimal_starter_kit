@@ -14,10 +14,9 @@ class SettingsPlugin(SystemPluginInterface):
 
     _instance = None
     
-    def __new__(cls, ui_manager : UIComponentManager, system_api : SystemAPI, intent_conductor: IntentConductor):
+    def __new__(cls, system_api : SystemAPI, intent_conductor: IntentConductor):
         if cls._instance is None:
             cls._instance = super(SettingsPlugin, cls).__new__(cls)
-            cls._instance.ui_manager = ui_manager
             cls._instance.system_api = system_api
             cls._instance.intent_conductor = intent_conductor
         return cls._instance
@@ -38,7 +37,18 @@ class SettingsPlugin(SystemPluginInterface):
             page.floating_action_button = None
             function_to_top_page()
 
-        my_header_cmp = self.ui_manager.get_component("simple_header2")
+        def get_component(component_name, **kwargs):
+            api.logger.info(f"Requesting component: {component_name}")
+            target_component = {"component_name": component_name}
+            response = self.intent_conductor.send_event("get_component", target_component, sender_plugin=self.__class__.__name__, target_plugin="UIComponentToolkit")
+            if response:
+                component_class = response
+                api.logger.info(f"Received component: {component_name}")
+                return component_class(**kwargs)
+            else:
+                api.logger.error(f"component cannot be found: {component_name}")
+
+        #my_header_cmp = get_component("SimpleHeader2")
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
         with open(icon_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -47,8 +57,7 @@ class SettingsPlugin(SystemPluginInterface):
             content=app_icon,
             on_tap= lambda _: reset_page_setting_and_close()
         )
-        my_header_instance = my_header_cmp(clickable_icon, MY_APP_NAME, "#20b2aa")
-        my_header_widget = my_header_instance.get_widget()
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text=MY_APP_NAME, color="#20b2aa")
         page.add(my_header_widget)
 
         def add_new_setting(system_dict : dict, setting_name :str, element_name :str, element_value: str, description_value: str, is_encrypted: bool) -> bool:

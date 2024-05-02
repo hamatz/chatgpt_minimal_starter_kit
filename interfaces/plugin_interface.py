@@ -2,8 +2,8 @@ import abc
 
 class PluginInterface(metaclass=abc.ABCMeta):
 
-    def __init__(self, ui_manager):
-        self.ui_manager = ui_manager
+    def __init__(self, intent_conductor):
+        self.intent_conductor = intent_conductor
 
     @abc.abstractmethod
     def load(self):

@@ -39,7 +39,7 @@ class CraftForgeBase:
         self.system_fc = SystemFileController(SYSTEM_FILENAME, base_dir)
         self.system_api = SystemAPI(self.mkm, self.system_fc)
         self.api = API(self.system_api)
-        self.intent_conductor = IntentConductor()
+        self.intent_conductor = IntentConductor(self.api)
         self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir, self.api, self.intent_conductor)
         self.mkm.prompt_password_dialog()
 
