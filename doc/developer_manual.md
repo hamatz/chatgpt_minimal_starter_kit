@@ -241,10 +241,16 @@ CraftForgeではシステム上にインストールされている異なった�
 
 ```mermaid
 sequenceDiagram
-    participant PluginA
-    participant PluginB
+    participant SamplePlugin
     participant IntentConductor
+    participant UIComponentToolkit
 
+    UIComponentToolkit->>IntentConductor: register_plugin("UIComponentToolkit", self)
+    SamplePlugin->>IntentConductor: send_event("get_component", {"component_name": "SimpleHeader"}, sender_plugin="SamplePlugin", target_plugin="UIComponentToolkit")
+    IntentConductor->>UIComponentToolkit: handle_event("get_component", {"component_name": "SimpleHeader"}, "SamplePlugin")
+    UIComponentToolkit->>IntentConductor: return SimpleHeader component class
+    IntentConductor->>SamplePlugin: return SimpleHeader component class
+    SamplePlugin->>SamplePlugin: Create an instance of SimpleHeader component
 ```
 
 以下は、シーケンス図に対応する IntentConductor の実装です。
@@ -292,10 +298,72 @@ class IntentConductor:
             self.api.logger.warning(f"Warning: Unauthorized task execution attempt. Task ID: {task_id}, Caller: {caller_plugin_path}")
 ```
 
-シーケンス図の説明:
+#### シーケンス図の説明:
 
+1. UIComponentToolkitは、起動時にIntentConductorの`register_plugin`メソッドを呼び出し、自身を"UIComponentToolkit"という名前でIntentConductorに登録します。
 
+```python
+def __new__(cls, system_api : SystemAPI, intent_conductor: IntentConductor):
+    if cls._instance is None:
+        cls._instance = super(UIComponentToolkit, cls).__new__(cls)
+        cls._instance.system_api = system_api
+        cls._instance.intent_conductor = intent_conductor
+        cls._instance.component_dir = "system/ui_components/components"
+        cls._instance.components = {}
+        cls._instance.load_components()
+        cls._instance.intent_conductor.register_plugin("UIComponentToolkit", cls._instance)
+    return cls._instance
+```
 
+2. SamplePluginは、IntentConductorに対して`get_component`イベントを送信します。イベントのデータには、要求するコンポーネント名（`SimpleHeader`）が含まれます。送信元プラグインと受信先プラグインも指定されます。
+
+```python
+def get_component(component_name, **kwargs):
+    api.logger.info(f"Requesting component: {component_name}")
+    target_component = {"component_name": component_name}
+    response = self.intent_conductor.send_event("get_component", target_component, sender_plugin=self.__class__.__name__, target_plugin="UIComponentToolkit")
+```
+
+3. IntentConductorは、`get_component`イベントをUIComponentToolkitの `handle_event`を呼び出す形で転送します。
+
+```python
+    def send_event(self, event_name, data, sender_plugin, target_plugin=None):
+        self.api.logger.info(f"Sending event: {event_name}, Data: {data}, Sender: {sender_plugin}, Target: {target_plugin}")
+        if target_plugin:
+            plugin = self.plugins.get(target_plugin)
+            # 受け取り先プラグイン指定でのイベント送信はレスポンスを期待して呼び出されていると考えて結果をreurnする
+            if plugin:
+                return plugin.handle_event(event_name, data, sender_plugin)
+```
+
+4. UIComponentToolkitは、要求されたコンポーネント名に対応するコンポーネントクラス（`SimpleHeader`）を返します。
+
+```python
+def handle_event(self, event_name, data, sender_plugin):
+    if event_name == "get_component":
+        component_name = data["component_name"]
+        component_class = self.get_component(component_name)
+        return component_class
+```
+
+5. IntentConductorは、UIComponentToolkitから受け取ったコンポーネントクラスをSamplePluginに返します。
+
+```python
+return plugin.handle_event(event_name, data, sender_plugin)
+```
+
+6. SamplePluginは、受け取ったコンポーネントクラスのインスタンスを作成します。
+
+```python
+    if response:
+        component_class = response
+        api.logger.info(f"Received component: {component_name}")
+        return component_class(**kwargs)
+    else:
+        api.logger.error(f"component cannot be found: {component_name}")
+```
+
+このように、`IntentConductor`は、プラグイン間のイベントの送受信を仲介する役割を果たしています。これにより、プラグインは互いに直接通信することなく、`IntentConductor`を介して連携することができます。
 
 #### Pipe　：　プラグインの処理結果をつなぎ合わせる形で処理を自動化する
 
