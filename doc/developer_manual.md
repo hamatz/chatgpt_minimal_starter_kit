@@ -384,8 +384,8 @@ sequenceDiagram
     IntentConductor->>PDFTrimmerPlugin: send_event("task_step", {"task_id": "pdf_processing", "step": "trim_pdf"}, initial_data)
     PDFTrimmerPlugin->>IntentConductor: return trimmed_pdf
     IntentConductor->>PDFTextExtractorPlugin: send_event("task_step", {"task_id": "pdf_processing", "step": "extract_text"}, trimmed_pdf)
-    PDFTextExtractorPlugin->>IntentConductor: return text_extracted
-    IntentConductor->>Caller: return text_extracted
+    PDFTextExtractorPlugin->>IntentConductor: return success
+    IntentConductor->>Caller: return success
 ```
 
 シーケンス図の説明:
@@ -396,8 +396,8 @@ sequenceDiagram
 4. IntentConductorは、タスクの最初のステップ（"trim_pdf"）を実行するために、PDFTrimmerPluginに`task_step`イベントを送信します。
 5. PDFTrimmerPluginは、PDFを指定ページでトリミングし、トリミングされたPDF（`trimmed_pdf`）をIntentConductorに返します。
 6. IntentConductorは、タスクの次のステップ（"extract_text"）を実行するために、PDFTextExtractorPluginに`task_step`イベントを送信します。トリミングされたPDFを渡します。
-7. PDFTextExtractorPluginは、トリミングされたPDFからテキストを抽出し、抽出されたテキスト（`text_extracted`）をIntentConductorに返します。
-8. IntentConductorは、抽出されたテキストを呼び出し元に返します。
+7. PDFTextExtractorPluginは、トリミングされたPDFからテキストを抽出し、Embeddings等によるベクトル化を行い、正常に処理が完了したことをIntentConductorに返します。
+8. IntentConductorは、処理結果を呼び出し元に返します。
 
 以下は、呼び出し元（Caller）でのコードサンプルです。
 
@@ -448,7 +448,7 @@ PDFTextExtractorPluginも同様に、`task_step`イベントを処理し、ト�
       "step_id": "extract_text",
       "plugin_name": "PDFTextExtractorPlugin",
       "input_keys": ["trimmed_pdf"],
-      "output_key": "extracted_text"
+      "output_key": "result"
     }
   ],
   "owner_plugin": "Caller"
@@ -468,7 +468,7 @@ PDFTextExtractorPluginも同様に、`task_step`イベントを処理し、ト�
 この例では、"pdf_processing"タスクは2つのステップで構成されています。
 
 1. "trim_pdf"ステップ：PDFTrimmerPluginが処理し、入力として"pdf_file_path"と"trim_from_page"を受け取り、出力として"trimmed_pdf"を返します。
-2. "extract_text"ステップ：PDFTextExtractorPluginが処理し、入力として"trimmed_pdf"を受け取り、出力として"extracted_text"を返します。
+2. "extract_text"ステップ：PDFTextExtractorPluginが処理し、入力として"trimmed_pdf"を受け取り、出力として"result"を返します。
 
 タスクの所有者は、"Caller"プラグインです。
 
@@ -510,7 +510,7 @@ initial_data = {
 result = self.intent_conductor.execute_task("pdf_processing", initial_data, "Caller")
 ```
 
-`execute_task`メソッドには、タスクID、初期データ、およびタスクを実行するプラグインの名前を渡します。
+この場合、`execute_task`メソッドには、タスクID、初期データ、およびタスクを実行するプラグインの名前を渡しているということになります。
 
 
 ## 5. プラグインのパッケージング
