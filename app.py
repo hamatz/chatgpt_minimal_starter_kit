@@ -4,6 +4,7 @@ import sys
 import flet as ft
 from plugin_manager import PluginManager
 from my_key_manager import MyKeyManager
+from intent_conductor import IntentConductor
 from ui_component_manager import UIComponentManager
 from system_file_controller import SystemFileController
 from system_api_layer import SystemAPI
@@ -17,8 +18,8 @@ from ui_components.app_container import AppContainer
 
 MY_SYSTEM_NAME = "CraftForgeBase"
 SYSTEM_FILENAME = "system_shared_data.json"
-VERSION = "0.1.6"
-BUILD_NUMBER = "4"
+VERSION = "0.1.7"
+BUILD_NUMBER = "5"
 MY_KEY_FILENAME = "my_app_info.json"
 HAKONIWA = False
 
@@ -38,19 +39,20 @@ class CraftForgeBase:
         self.system_fc = SystemFileController(SYSTEM_FILENAME, base_dir)
         self.system_api = SystemAPI(self.mkm, self.system_fc)
         self.api = API(self.system_api)
-        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir, self.api)
+        self.intent_conductor = IntentConductor(self.api)
+        self.pm = PluginManager(self.page, self.page_back, self.ui_manager, self.system_api, base_dir, save_dir, self.api, self.intent_conductor)
         self.mkm.prompt_password_dialog()
 
     def show_main_page(self) -> None:
         def pick_file_and_install(e: ft.FilePickerResultEvent):
             self.pm.install_plugin(e, main_container)
 
-        self.page.appbase_toast =  ft.SnackBar(
-            content=ft.Text("appbase_toast"),
-            action="Alright!",
-        )
+        # self.page.appbase_toast =  ft.SnackBar(
+        #     content=ft.Text("appbase_toast"),
+        #     action="Alright!",
+        # )
         my_header_cmp = self.ui_manager.get_component("simple_header")
-        my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.1.6", "#20b2aa")
+        my_header_instance = my_header_cmp(ft.icons.MENU_ROUNDED, "CraftForge v.0.1.7", "#20b2aa")
         my_header_widget = my_header_instance.get_widget()
         my_footer_cmp = self.ui_manager.get_component("simple_footer")
         my_footer_instance = my_footer_cmp("@hamatz", "#20b2aa")
@@ -59,7 +61,7 @@ class CraftForgeBase:
         main_container = ft.GridView(
             expand=1,
             runs_count=5,
-            max_extent=120,
+            max_extent=180,
             child_aspect_ratio=1.0,
             spacing=5,
             run_spacing=5,
@@ -69,7 +71,17 @@ class CraftForgeBase:
         self.pm.load_system_plugins(main_container)
         file_picker = ft.FilePicker(on_result=pick_file_and_install)
         self.page.overlay.append(file_picker)
-        install_button = ft.ElevatedButton("Install Plugin", icon=ft.icons.UPLOAD_FILE, on_click=lambda _:file_picker.pick_files())
+        install_button = ft.ElevatedButton(
+            "Install Plugin",
+            icon=ft.icons.UPLOAD_FILE, 
+            on_click=lambda _:file_picker.pick_files(),
+            style=ft.ButtonStyle(
+                bgcolor={"": ft.colors.LIGHT_BLUE_200, "hovered": ft.colors.LIGHT_BLUE_400},
+                color={"": ft.colors.WHITE, "hovered": ft.colors.WHITE},
+                shape=ft.RoundedRectangleBorder(radius=10),
+                padding=ft.padding.all(10),
+            ),
+        )
         self.page.add(install_button, my_footer_widget)
         self.page.update()
 

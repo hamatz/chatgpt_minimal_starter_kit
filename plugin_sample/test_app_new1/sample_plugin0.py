@@ -4,21 +4,31 @@ from interfaces.plugin_interface import PluginInterface
 class SamplePlugin(PluginInterface):
     _instance = None
     
-    def __new__(cls, ui_manager):
+    def __new__(cls, intent_conductor):
         if cls._instance is None:
             cls._instance = super(SamplePlugin, cls).__new__(cls)
             # 新しいインスタンスの初期化
-            cls._instance.ui_manager = ui_manager
+            cls._instance.intent_conductor = intent_conductor
         return cls._instance
 
     def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
-        my_header_cmp = self.ui_manager.get_component("simple_header")
-        my_header_instance = my_header_cmp(ft.icons.TABLE_RESTAURANT, "Sample Plugin v.0.0.1", "#20b2aa")
-        my_header_widget = my_header_instance.get_widget()
+
+        def get_component(component_name, **kwargs):
+            api.logger.info(f"Requesting component: {component_name}")
+            target_component = {"component_name": component_name}
+            response = self.intent_conductor.send_event("get_component", target_component, sender_plugin=self.__class__.__name__, target_plugin="UIComponentToolkit")
+            if response:
+                component_class = response
+                api.logger.info(f"Received component: {component_name}")
+                return component_class(**kwargs)
+            else:
+                api.logger.error(f"component cannot be found: {component_name}")
+
+        my_header_widget = get_component("SimpleHeader", icon=ft.icons.TABLE_RESTAURANT, title_text="Sample Plugin v.0.1.0", color="#20b2aa")
+
         greeting_text = ft.Text("はじめてのプラグインです", size=20)
         back_button = ft.ElevatedButton("Back to Main Page", on_click=lambda _: function_to_top_page())
 
-        # 既存のUIをクリアして、新しいUIをページに追加
         page.clean()
         page.add(my_header_widget)
         page.add(greeting_text, back_button)

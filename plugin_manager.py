@@ -12,6 +12,7 @@ from typing import Callable
 from interfaces.plugin_interface import PluginInterface
 from interfaces.system_plugin_interface import SystemPluginInterface
 from ui_component_manager import UIComponentManager
+from intent_conductor import IntentConductor
 from system_api_layer import SystemAPI
 from api import API
 from code_security_scanner import CodeSecurityScanner
@@ -21,13 +22,14 @@ SYSTEM_PLUGIN_FOLDER = "system"
 
 class PluginManager:
 
-    def __init__(self, page: ft.Page, page_back : Callable[[], None], ui_manager: UIComponentManager, system_api: SystemAPI, base_dir: str, save_dir: str, api : API):
+    def __init__(self, page: ft.Page, page_back : Callable[[], None], ui_manager: UIComponentManager, system_api: SystemAPI, base_dir: str, save_dir: str, api : API, intent_conductor: IntentConductor):
         self.page = page
         self.page_back_func = page_back
         self.plugin_dict = {}
         self.__ui_manager = ui_manager
         self.__system_api = system_api
         self.api = api
+        self.intent_conductor = intent_conductor
         self.plugin_folder_path = os.path.join(save_dir, PLUGIN_FOLDER)
         self.system_plugin_folder_path = os.path.join(base_dir, SYSTEM_PLUGIN_FOLDER)
         self.myapp_container = None
@@ -48,9 +50,9 @@ class PluginManager:
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
         # システムプラグインかどうかに基づき、インスタンスを作成
         if "system" in plugin_dir:
-            plugin_instance = plugin_class(self.__ui_manager, self.__system_api)
+            plugin_instance = plugin_class(self.__system_api, self.intent_conductor)
         else:
-            plugin_instance = plugin_class(self.__ui_manager)
+            plugin_instance = plugin_class(self.intent_conductor)
         # アイコン画像の読み込みとエンコード
         try:
             icon_path = os.path.join(plugin_dir, plugin_info["icon"])

@@ -8,10 +8,10 @@ from api import API
 class SampleChat(PluginInterface):
     _instance = None
     
-    def __new__(cls, ui_manager):
+    def __new__(cls, intent_conductor):
         if cls._instance is None:
             cls._instance = super(SampleChat, cls).__new__(cls)
-            cls._instance.ui_manager = ui_manager
+            cls._instance.intent_conductor = intent_conductor
         return cls._instance
 
     def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
@@ -26,6 +26,17 @@ class SampleChat(PluginInterface):
             )
             return response
         
+        def get_component(component_name, **kwargs):
+            api.logger.info(f"Requesting component: {component_name}")
+            target_component = {"component_name": component_name}
+            response = self.intent_conductor.send_event("get_component", target_component, sender_plugin=self.__class__.__name__, target_plugin="UIComponentToolkit")
+            if response:
+                component_class = response
+                api.logger.info(f"Received component: {component_name}")
+                return component_class(**kwargs)
+            else:
+                api.logger.error(f"component cannot be found: {component_name}")
+        
         page.clean()
         self.my_service = "OpenAI"
 
@@ -34,7 +45,6 @@ class SampleChat(PluginInterface):
             set_gpt_client()
             page.update()
 
-        my_header_cmp = self.ui_manager.get_component("simple_header2")
         icon_path = os.path.join(my_app_path, "back_button.png")
         with open(icon_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -43,8 +53,7 @@ class SampleChat(PluginInterface):
             content=app_icon,
             on_tap= lambda _: reset_page_setting_and_close()
         )
-        my_header_instance = my_header_cmp(clickable_icon, "Sample Chat v.0.0.1", "#20b2aa")
-        my_header_widget = my_header_instance.get_widget()
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text= "Sample Chat v.0.1.0", color="#20b2aa")
         
         page.add(my_header_widget)
 
