@@ -432,6 +432,87 @@ PDFTextExtractorPluginも同様に、`task_step`イベントを処理し、ト�
 この仕組みを活用することで、より柔軟でパワフルなプラグイン連携の機能を利用できるようになります。これまで手順書を用意して、手作業で行なっていた複数のアプリケーションを使うような定型的な作業が、ボタン１つで自動実行可能になる、といった世界も夢ではありません。
 プラグイン開発者間で再利用可能な小さなプラグインを共有し、この機構を利用してUNIX Pipeのようにそれらを組み合わせることで、より高度な機能を効率的に実現できるようになることを期待しています。
 
+以下は、TaskDefinitionのサンプルJSONです。
+
+```json
+{
+  "task_id": "pdf_processing",
+  "steps": [
+    {
+      "step_id": "trim_pdf",
+      "plugin_name": "PDFTrimmerPlugin",
+      "input_keys": ["pdf_file_path", "trim_from_page"],
+      "output_key": "trimmed_pdf"
+    },
+    {
+      "step_id": "extract_text",
+      "plugin_name": "PDFTextExtractorPlugin",
+      "input_keys": ["trimmed_pdf"],
+      "output_key": "extracted_text"
+    }
+  ],
+  "owner_plugin": "Caller"
+}
+```
+
+このJSONは、以下の要素で構成されています。
+
+- `task_id`: タスクの一意の識別子です。この例では、"pdf_processing"となっています。
+- `steps`: タスクを構成するステップの配列です。各ステップには以下の情報が含まれます。
+  - `step_id`: ステップの一意の識別子です。
+  - `plugin_name`: ステップを処理するプラグインの名前です。
+  - `input_keys`: ステップへの入力データのキーの配列です。
+  - `output_key`: ステップの出力データのキーです。
+- `owner_plugin`: タスクを所有するプラグインの名前です。
+
+この例では、"pdf_processing"タスクは2つのステップで構成されています。
+
+1. "trim_pdf"ステップ：PDFTrimmerPluginが処理し、入力として"pdf_file_path"と"trim_from_page"を受け取り、出力として"trimmed_pdf"を返します。
+2. "extract_text"ステップ：PDFTextExtractorPluginが処理し、入力として"trimmed_pdf"を受け取り、出力として"extracted_text"を返します。
+
+タスクの所有者は、"Caller"プラグインです。
+
+プラグイン開発者は、このようなJSONを使用してタスクを定義し、`register_task`メソッドを呼び出すことができます。以下は、Python側でのタスク登録の例です。
+
+```python
+task_definition = {
+    "task_id": "pdf_processing",
+    "steps": [
+        {
+            "step_id": "trim_pdf",
+            "plugin_name": "PDFTrimmerPlugin",
+            "input_keys": ["pdf_file_path", "trim_from_page"],
+            "output_key": "trimmed_pdf"
+        },
+        {
+            "step_id": "extract_text",
+            "plugin_name": "PDFTextExtractorPlugin",
+            "input_keys": ["trimmed_pdf"],
+            "output_key": "extracted_text"
+        }
+    ],
+    "owner_plugin": "Caller"
+}
+
+self.intent_conductor.register_task(task_definition)
+```
+
+この例では、タスク定義をPythonの辞書として表現し、`register_task`メソッドに渡しています。
+
+タスクを実行する際には、以下のように`execute_task`メソッドを呼び出します。
+
+```python
+initial_data = {
+    "pdf_file_path": "path/to/pdf/file",
+    "trim_from_page": 5
+}
+
+result = self.intent_conductor.execute_task("pdf_processing", initial_data, "Caller")
+```
+
+`execute_task`メソッドには、タスクID、初期データ、およびタスクを実行するプラグインの名前を渡します。
+
+
 ## 5. プラグインのパッケージング
 
 ### 5.1 プラグインのZIPファイル化
