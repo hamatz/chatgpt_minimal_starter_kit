@@ -48,7 +48,6 @@ class SettingsPlugin(SystemPluginInterface):
             else:
                 api.logger.error(f"component cannot be found: {component_name}")
 
-        #my_header_cmp = get_component("SimpleHeader2")
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
         with open(icon_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")

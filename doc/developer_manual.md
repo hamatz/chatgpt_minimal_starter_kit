@@ -21,11 +21,11 @@ class SamplePlugin(PluginInterface):
 
     _instance = None
     
-    def __new__(cls, intent_conductor):
+    def __new__(cls, intent_conducto):
         if cls._instance is None:
             cls._instance = super(SamplePlugin, cls).__new__(cls)
             # 新しいインスタンスの初期化
-            cls._instance.intent_conductor = intent_conductor
+            cls._instance.intent_conducto = intent_conducto
         return cls._instance
 ```
 
@@ -145,30 +145,33 @@ def _load_plugin(self, plugin_dir: str, container: ft.Container):
 以下は、プラグインの`load`メソッドの例です。
 
 ```python
-def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
-    # ヘッダーの作成
-    my_header_cmp = self.ui_manager.get_component("simple_header")
-    my_header_instance = my_header_cmp(ft.icons.TABLE_RESTAURANT, "My Plugin", "#20b2aa")
-    my_header_widget = my_header_instance.get_widget()
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
 
-    # ボタンの作成
-    def button_clicked(e):
-        page.add(ft.Text("Button clicked!"))
+        # UIComponentToolkit からUIコンポーネントを取得する
+        def get_component(component_name, **kwargs):
+            api.logger.info(f"Requesting component: {component_name}")
+            target_component = {"component_name": component_name}
+            response = self.intent_conductor.send_event("get_component", target_component, sender_plugin=self.__class__.__name__, target_plugin="UIComponentToolkit")
+            if response:
+                component_class = response
+                api.logger.info(f"Received component: {component_name}")
+                return component_class(**kwargs)
+            else:
+                api.logger.error(f"component cannot be found: {component_name}")
 
-    my_button = ft.ElevatedButton("Click me", on_click=button_clicked)
+        my_header_widget = get_component("SimpleHeader", icon=ft.icons.TABLE_RESTAURANT, title_text="Sample Plugin v.0.1.0", color="#20b2aa")
 
-    # ホーム画面に戻るボタンの作成
-    back_button = ft.ElevatedButton("Back to Home", on_click=lambda _: function_to_top_page())
+        greeting_text = ft.Text("はじめてのプラグインです", size=20)
+        #ホーム画面に戻るボタンの作成
+        back_button = ft.ElevatedButton("Back to Main Page", on_click=lambda _: function_to_top_page())
 
-    # ページの構築
-    page.clean() #現在表示されている画面を一旦クリアして自身の画面を描画数r前準備をする
-    page.add(my_header_widget)
-    page.add(my_button)
-    page.add(back_button)
-    page.update()
+        page.clean() #描画前のクリーンアップ
+        page.add(my_header_widget)
+        page.add(greeting_text, back_button)
+        page.update()
 ```
 
-上記の例では、`load`メソッド内でヘッダー、ボタン、ホーム画面に戻るボタンを作成し、ページに追加しています。`function_to_top_page`関数を使用して、ホーム画面に戻るボタンのクリックイベントを処理しています。
+上記の例では、`load`メソッド内でヘッダー、テキスト、ホーム画面に戻るボタンを作成し、ページに追加しています。`function_to_top_page`関数を使用して、ホーム画面に戻るボタンのクリックイベントを処理しています。
 
 プラグインを開発する際は、このような構造に従って、必要なUIコンポーネントを作成し、イベントハンドリングを行ってください。`api`オブジェクトを使用して、CraftForgeの機能を呼び出すこともできます。
 
@@ -232,7 +235,67 @@ APIを活用することで、プラグイン開発者はセキュアかつ効�
 
 CraftForgeではシステム上にインストールされている異なったプラグインに対し処理を依頼するための機構として`IntentConductor`が提供されています。プラグインの初期化時に`PluginManager`からパラメータとして受け取った`IntentConductor`に対して自分自身を登録する事により、そこに登録されている他のプラグインに対してメッセージを送信することができるようになっています。この際、受取先となるプラグインを指定することも、登録されている全てのプラグインに送信することも、どちらも可能となっています。
 
-#### 機能の呼び出し　：　プラグイン同士の連携
+#### 機能の呼び出し　：プラグイン同士の連携
+
+具体的にイメージしやすいよう、流れをシーケンス図で示します。
+
+```mermaid
+sequenceDiagram
+    participant PluginA
+    participant PluginB
+    participant IntentConductor
+
+```
+
+以下は、シーケンス図に対応する IntentConductor の実装です。
+
+```python
+class IntentConductor:
+    def __init__(self, api):
+        self.plugins = {}
+        self.api = api
+
+    def register_plugin(self, plugin_name, plugin):
+        self.plugins[plugin_name] = plugin
+        if hasattr(plugin, 'handle_event'):
+            self.plugins[plugin_name].handle_event = plugin.handle_event.__get__(plugin)
+
+    def unregister_plugin(self, plugin_name):
+        del self.plugins[plugin_name]
+
+    def send_event(self, event_name, data, sender_plugin, target_plugin=None):
+        self.api.logger.info(f"Sending event: {event_name}, Data: {data}, Sender: {sender_plugin}, Target: {target_plugin}")
+        if target_plugin:
+            plugin = self.plugins.get(target_plugin)
+            # 受け取り先プラグイン指定でのイベント送信はレスポンスを期待して呼び出されていると考えて結果をreurnする
+            if plugin:
+                return plugin.handle_event(event_name, data, sender_plugin)
+        else:
+            for plugin_name, plugin in self.plugins.items():
+                if plugin_name != sender_plugin:
+                    plugin.handle_event(event_name, data, sender_plugin)
+            # ブロードキャストの場合はUIコンポーネントのテーマ変更など、受け取り側で処理をするだけでリプライ不要のメッセージと考えて処理終了後にただ"Finished"を返す
+            return "Finished"
+        
+    def register_task(self, task_id, task_definition, owner_plugin_path):
+        self.tasks[task_id] = task_definition
+        self.task_owners[task_id] = owner_plugin_path
+
+    def execute_task(self, task_id, initial_data, caller_plugin_path):
+        if task_id in self.tasks and self.task_owners[task_id] == caller_plugin_path:
+            task_definition = self.tasks[task_id]
+            self.send_event("task_start", {"task_id": task_id, "data": initial_data})
+            for step in task_definition:
+                self.send_event("task_step", {"task_id": task_id, "step": step})
+            self.send_event("task_end", {"task_id": task_id})
+        else:
+            self.api.logger.warning(f"Warning: Unauthorized task execution attempt. Task ID: {task_id}, Caller: {caller_plugin_path}")
+```
+
+シーケンス図の説明:
+
+
+
 
 #### Pipe　：　プラグインの処理結果をつなぎ合わせる形で処理を自動化する
 
@@ -269,11 +332,9 @@ CraftForgeでは、プラグインのバージョン管理が行われます。�
 - error
 
 の４種別でのログメッセージが出力可能となっています。たとえばエラーログとして出力したい場合は以下のような形で利用します。
-
 ```python
 api.logger.error(f"Error loading or encoding icon: {e}")
 ```
-
 ログの情報は、CraftForgeが置かれているのと同じ階層に`CraftForge.log`として追記されていく形で保存されます。
 
 ### 6.2 よくあるエラーとその対処法
@@ -305,14 +366,14 @@ api.logger.error(f"Error loading or encoding icon: {e}")
 - 重い処理は、バックグラウンドスレッドで実行する
 
 ## 9. よくある質問（FAQ）
-- Q: プラグインの開発にはどのようなスキルが必要ですか？
-  A: Pythonの基本的な知識と、Fletを使用したUIの開発経験が必要です。
+- Q: プラグインの開発にはどのようなスキルが必要ですか？ 
+  A: Pythonの基本的な知識と、Fletを使用したUIの開発経験が必要です。 
 
-- Q: プラグインをアップデートするにはどうすればよいですか？
-  A: プラグインのバージョンを上げて、再度ZIPファイル化してインストールしてください。古いバージョンのプラグインは自動的に別のプラグインとして扱われます。
+- Q: プラグインをアップデートするにはどうすればよいですか？ 
+  A: プラグインのバージョンを上げて、再度ZIPファイル化してインストールしてください。古いバージョンのプラグインは自動的に別のプラグインとして扱われます。 
 
-- Q: プラグインのアイコン画像の形式は何ですか？
-  A: PNGまたはJPEG形式の画像を使用してください。
+- Q: プラグインのアイコン画像の形式は何ですか？ 
+  A: PNGまたはJPEG形式の画像を使用してください。 
 
 ## 10. 参考リソース
 
