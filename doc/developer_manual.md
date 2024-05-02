@@ -365,7 +365,7 @@ return plugin.handle_event(event_name, data, sender_plugin)
 
 このように、`IntentConductor`は、プラグイン間のイベントの送受信を仲介する役割を果たしています。これにより、プラグインは互いに直接通信することなく、`IntentConductor`を介して連携することができます。
 
-#### Pipe：プラグインの処理結果をつなぎ合わせる形で処理を自動化する
+#### Pipe：プラグインの処理結果をつなぎ合わせる形で作業を自動化する
 
 Pipe機能は、複数のプラグインの処理を連携させ、ルーティーン作業を自動化するために使用されます。
 
@@ -384,8 +384,8 @@ sequenceDiagram
     IntentConductor->>PDFTrimmerPlugin: send_event("task_step", {"task_id": "pdf_processing", "step": "trim_pdf"}, initial_data)
     PDFTrimmerPlugin->>IntentConductor: return trimmed_pdf
     IntentConductor->>PDFTextExtractorPlugin: send_event("task_step", {"task_id": "pdf_processing", "step": "extract_text"}, trimmed_pdf)
-    PDFTextExtractorPlugin->>IntentConductor: return success
-    IntentConductor->>Caller: return success
+    PDFTextExtractorPlugin->>IntentConductor: return text_extracted
+    IntentConductor->>Caller: return text_extracted
 ```
 
 シーケンス図の説明:
@@ -396,122 +396,60 @@ sequenceDiagram
 4. IntentConductorは、タスクの最初のステップ（"trim_pdf"）を実行するために、PDFTrimmerPluginに`task_step`イベントを送信します。
 5. PDFTrimmerPluginは、PDFを指定ページでトリミングし、トリミングされたPDF（`trimmed_pdf`）をIntentConductorに返します。
 6. IntentConductorは、タスクの次のステップ（"extract_text"）を実行するために、PDFTextExtractorPluginに`task_step`イベントを送信します。トリミングされたPDFを渡します。
-7. PDFTextExtractorPluginは、トリミングされたPDFからテキストを抽出し、Embeddings等によるベクトル化を行い、正常に処理が完了したことをIntentConductorに返します。
-8. IntentConductorは、処理結果を呼び出し元に返します。
+7. PDFTextExtractorPluginは、トリミングされたPDFからテキストを抽出し、抽出されたテキスト（`text_extracted`）をIntentConductorに返します。
+8.  IntentConductorは、抽出されたテキストを呼び出し元に返します。
 
-以下は、呼び出し元（Caller）でのコードサンプルです。
+ここまでだとあまり嬉しさが伝わらないかもしれません。
 
-```python
-# タスクの登録
-self.intent_conductor.register_task("pdf_processing", ["trim_pdf", "extract_text"], "Caller")
+IntentConductorのPipe機能を使用することで、従来は手作業で繰り返し行っていた一連の処理を自動化することができます。例えば特定のフォルダ内にある複数のPDFファイルを一括で処理し、トリミングとテキスト抽出、ベクトルDBへの登録を自動で行う応用などは、まさにPipe機能の活用シーンとして適切です。
 
-# タスクの実行
-initial_data = {"pdf_file_path": "path/to/pdf/file", "trim_from_page": 5}
-result = self.intent_conductor.execute_task("pdf_processing", initial_data, "Caller")
-```
-
-呼び出し元は、`register_task`メソッドを使用してタスクを登録し、`execute_task`メソッドを使用してタスクを実行します。初期データには、処理対象のPDFファイルのパスとトリミングを開始するページ数を指定します。
-
-PDFTrimmerPluginとPDFTextExtractorPluginは、それぞれ`handle_event`メソッドを実装し、`task_step`イベントを処理します。以下は、PDFTrimmerPluginの`handle_event`メソッドの例です。
+以下は、そのような一括処理を行うプラグインの例です。
 
 ```python
-def handle_event(self, event_name, data, sender_plugin):
-    if event_name == "task_step" and data["step"] == "trim_pdf":
-        pdf_file_path = data["pdf_file_path"]
-        trim_from_page = data["trim_from_page"]
-        trimmed_pdf = self.trim_pdf(pdf_file_path, trim_from_page)
-        return trimmed_pdf
+import os
+
+class PDFBatchProcessorPlugin(PluginInterface):
+    def __init__(self, intent_conductor):
+        super().__init__(intent_conductor)
+
+    def process_pdfs_in_folder(self, folder_path):
+        pdf_files = [f for f in os.listdir(folder_path) if f.endswith(".pdf")]
+        
+        for pdf_file in pdf_files:
+            pdf_file_path = os.path.join(folder_path, pdf_file)
+            initial_data = {
+                "pdf_file_path": pdf_file_path,
+                "trim_from_page": 5
+            }
+            result = self.intent_conductor.execute_task("pdf_processing", initial_data, self.__class__.__name__)
+            
+            extracted_text = result["extracted_text"]
+            self.register_to_vector_db(extracted_text)
+
+    def register_to_vector_db(self, text):
+        # ベクトルDBへの登録処理を実装
+        pass
 ```
 
-PDFTrimmerPluginは、`task_step`イベントを受信し、ステップ名が"trim_pdf"の場合、PDFファイルをトリミングし、トリミングされたPDFを返します。
+このプラグインでは、`process_pdfs_in_folder`メソッドが指定されたフォルダ内のPDFファイルを一括で処理します。以下の手順で処理が行われます。
 
-PDFTextExtractorPluginも同様に、`task_step`イベントを処理し、トリミングされたPDFからテキストを抽出します。
+1. 指定されたフォルダ内のPDFファイルのリストを取得します。
+2. 各PDFファイルに対して以下の処理を行います。
+   - PDFファイルのパスと、トリミングを開始するページ数を初期データとして準備します。
+   - `execute_task`メソッドを呼び出し、"pdf_processing"タスクを実行します。このタスクは、PDFのトリミングとテキスト抽出を行います。
+   - タスクの実行結果から、抽出されたテキストを取得します。
+   - 抽出されたテキストをベクトルDBに登録します（`register_to_vector_db`メソッド）。
 
-このように、IntentConductorのPipe機能を使用することで、複数のプラグインの処理を連携させ、自動化することができます。プラグイン開発者は、`register_task`メソッドを使用してタスクを定義し、`execute_task`メソッドを使用してタスクを実行できます。各プラグインは、`handle_event`メソッドを実装することで、タスクの各ステップを処理します。
-
-この仕組みを活用することで、より柔軟でパワフルなプラグイン連携の機能を利用できるようになります。これまで手順書を用意して、手作業で行なっていた複数のアプリケーションを使うような定型的な作業が、ボタン１つで自動実行可能になる、といった世界も夢ではありません。
-プラグイン開発者間で再利用可能な小さなプラグインを共有し、この機構を利用してUNIX Pipeのようにそれらを組み合わせることで、より高度な機能を効率的に実現できるようになることを期待しています。
-
-以下は、TaskDefinitionのサンプルJSONです。
-
-```json
-{
-  "task_id": "pdf_processing",
-  "steps": [
-    {
-      "step_id": "trim_pdf",
-      "plugin_name": "PDFTrimmerPlugin",
-      "input_keys": ["pdf_file_path", "trim_from_page"],
-      "output_key": "trimmed_pdf"
-    },
-    {
-      "step_id": "extract_text",
-      "plugin_name": "PDFTextExtractorPlugin",
-      "input_keys": ["trimmed_pdf"],
-      "output_key": "result"
-    }
-  ],
-  "owner_plugin": "Caller"
-}
-```
-
-このJSONは、以下の要素で構成されています。
-
-- `task_id`: タスクの一意の識別子です。この例では、"pdf_processing"となっています。
-- `steps`: タスクを構成するステップの配列です。各ステップには以下の情報が含まれます。
-  - `step_id`: ステップの一意の識別子です。
-  - `plugin_name`: ステップを処理するプラグインの名前です。
-  - `input_keys`: ステップへの入力データのキーの配列です。
-  - `output_key`: ステップの出力データのキーです。
-- `owner_plugin`: タスクを所有するプラグインの名前です。
-
-この例では、"pdf_processing"タスクは2つのステップで構成されています。
-
-1. "trim_pdf"ステップ：PDFTrimmerPluginが処理し、入力として"pdf_file_path"と"trim_from_page"を受け取り、出力として"trimmed_pdf"を返します。
-2. "extract_text"ステップ：PDFTextExtractorPluginが処理し、入力として"trimmed_pdf"を受け取り、出力として"result"を返します。
-
-タスクの所有者は、"Caller"プラグインです。
-
-プラグイン開発者は、このようなJSONを使用してタスクを定義し、`register_task`メソッドを呼び出すことができます。以下は、Python側でのタスク登録の例です。
+このプラグインを使用することで、ユーザーは単一のメソッド呼び出しで、フォルダ内の全てのPDFファイルに対して、トリミング、テキスト抽出、ベクトルDBへの登録を自動で行うことができます。
 
 ```python
-task_definition = {
-    "task_id": "pdf_processing",
-    "steps": [
-        {
-            "step_id": "trim_pdf",
-            "plugin_name": "PDFTrimmerPlugin",
-            "input_keys": ["pdf_file_path", "trim_from_page"],
-            "output_key": "trimmed_pdf"
-        },
-        {
-            "step_id": "extract_text",
-            "plugin_name": "PDFTextExtractorPlugin",
-            "input_keys": ["trimmed_pdf"],
-            "output_key": "extracted_text"
-        }
-    ],
-    "owner_plugin": "Caller"
-}
-
-self.intent_conductor.register_task(task_definition)
+pdf_batch_processor = PDFBatchProcessorPlugin(intent_conductor)
+pdf_batch_processor.process_pdfs_in_folder("path/to/pdf/folder")
 ```
 
-この例では、タスク定義をPythonの辞書として表現し、`register_task`メソッドに渡しています。
+このように、IntentConductorのPipe機能を活用することで、複雑な一連の処理を自動化し、ユーザーの手作業を大幅に削減することができます。これは、大量のPDFファイルを処理する必要があるユースケースや、定期的に同じ処理を繰り返す必要があるシナリオで特に有用です。
 
-タスクを実行する際には、以下のように`execute_task`メソッドを呼び出します。
-
-```python
-initial_data = {
-    "pdf_file_path": "path/to/pdf/file",
-    "trim_from_page": 5
-}
-
-result = self.intent_conductor.execute_task("pdf_processing", initial_data, "Caller")
-```
-
-この場合、`execute_task`メソッドには、タスクID、初期データ、およびタスクを実行するプラグインの名前を渡しているということになります。
-
+プラグイン開発者は、このような一括処理の機能を提供することで、ユーザーに大きな価値を提供することができます。そして、すべての処理を自分で書くよりも、遥かに手軽で手早く完成させることができるのです。
 
 ## 5. プラグインのパッケージング
 
