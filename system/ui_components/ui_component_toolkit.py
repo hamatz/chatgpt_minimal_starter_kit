@@ -3,7 +3,6 @@ import importlib
 import json
 import os
 import flet as ft
-from ui_component_manager import UIComponentManager
 from system_api_layer import SystemAPI
 from intent_conductor import IntentConductor
 from interfaces.system_plugin_interface import SystemPluginInterface

@@ -11,7 +11,6 @@ import flet as ft
 from typing import Callable, Dict
 from interfaces.plugin_interface import PluginInterface
 from interfaces.system_plugin_interface import SystemPluginInterface
-from ui_component_manager import UIComponentManager
 from intent_conductor import IntentConductor
 from system_api_layer import SystemAPI
 from api import API

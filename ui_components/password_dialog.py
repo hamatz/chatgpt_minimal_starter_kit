@@ -28,7 +28,6 @@ class PasswordDialog(ft.UserControl):
                     end=ft.alignment.bottom_right,
                     colors=[ft.colors.PINK_50, ft.colors.PURPLE_50],
                 ),
-                #border=ft.border.all(2, ft.colors.BLACK),
                 border_radius=ft.border_radius.all(10),
             ),
             actions=[
