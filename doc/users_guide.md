@@ -1,6 +1,6 @@
 # 1. はじめに
 
-<div align="center">
+<div>
     <img src="img/home.png" alt="Home" width="300" height="300">
 </div>
    
@@ -55,7 +55,7 @@ CraftForgeは、実行可能ファイル (exe) の形式で配布されます。
 
 また、システム管理者の方々にとっても、ビルド済みの実行ファイルを配布することには大きなメリットがあります。ビルド済みの実行ファイルを使用する場合、ユーザーがPython Runtimeに対して勝手にライブラリを追加することはできません。これにより、システム管理者は、許可していないライブラリの使用を制限することができます。一方で、CraftForgeはPythonベースのプラットフォームであるため、Pythonを使いたいエンドユーザーのニーズにも応えることができます。つまり、CraftForgeは、「Pythonを使いたいエンドユーザーと許可していないライブラリの使用を制限したいシステム管理側」との間の妥協点となり得るのではないか？と考えています。
 
-<div align="center">
+<div>
     <img src="img/office2.jpg" alt="Fig2" width="300" height="300">
 </div>
 
@@ -206,7 +206,7 @@ CraftForgeでは、プラグイン間でデータを共有する機能があり�
 
 ## 5.4. プラグイン間の連携と自動化
 
-<div align="center">
+<div>
     <img src="img/pipes5.jpg" alt="Fig3" width="300" height="300">
 </div>
 
