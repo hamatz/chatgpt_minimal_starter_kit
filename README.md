@@ -21,8 +21,10 @@
 </div>
 
 <!-- ABOUT THE PROJECT -->
-## About The Project : アイデアを即座に形にする、革新的なオープンソースプラットフォーム
+## About The Project : 
 [![CraftForge Screen Shot][product-screenshot]](https://github.com/hamatz/chatgpt_minimal_starter_kit)
+
+### アイデアを即座に形にする、革新的なオープンソースプラットフォーム
 
 CraftForgeは、Fletフレームワークを基盤とした、ユニークなデスクトップアプリケーションプラットフォームです。私たちのミッションは、誰もが自由に創造性を発揮し、アイデアを素早く形にできる環境を提供することです。
 
