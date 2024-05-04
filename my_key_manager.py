@@ -10,15 +10,15 @@ import os
 import uuid
 import json
 import flet as ft
+from ui_components.password_dialog import PasswordDialog
 
 class MyKeyManager:
 
-    def __init__(self, page: ft.Page, ui_manager, base_dir, my_key_file_name):
+    def __init__(self, page: ft.Page, base_dir, my_key_file_name):
         self.__my_key_file_path = os.path.join(base_dir, my_key_file_name)
         self.__my_app_key = None
         self.__my_pass_phrase = None
         self.__page = page
-        self.__ui_manager = ui_manager
         self.failed_attempts = 0
         self.locked_until = None
 
@@ -26,22 +26,18 @@ class MyKeyManager:
         def close_dlg(e):
             self.__page.dialog.open = False
             self.__page.update()
-            # パスワード入力後の処理を行う
             self.handle_key_file(password_input.value)
 
         def textbox_changed(e):
-            # パスワード入力の値を更新
             password_input.value = e.control.value
             self.__page.update()
 
         password_input = ft.TextField(on_change=textbox_changed)
-        dlg_component = self.__ui_manager.get_component("password_dialog")
-        dlg_modal = dlg_component("起動用パスワードの入力をお願いします", "Your Password",textbox_changed, "入力完了", close_dlg)
-        open_dlg_modal = lambda: self.__show_dialog(dlg_modal)
-        open_dlg_modal()
+        dlg_modal = PasswordDialog("起動用パスワードの入力をお願いします", "Your Password", textbox_changed, "入力完了", close_dlg)
+        self.__show_dialog(dlg_modal.build())
 
     def __show_dialog(self, dialog):
-        self.__page.dialog = dialog.get_widget()
+        self.__page.dialog = dialog
         self.__page.dialog.open = True
         self.__page.update()
 
