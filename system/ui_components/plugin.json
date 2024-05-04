@@ -4,5 +4,5 @@
     "description": "UIコンポーネントカタログ兼UIコンポーネントライブラリ",
     "main_module": "ui_component_toolkit",
     "plugin_name": "UIComponentToolkit",
-    "icon": "icon.png"
+    "icon": "icon.jpg"
 }
