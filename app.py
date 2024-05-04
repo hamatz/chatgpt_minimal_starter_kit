@@ -58,7 +58,7 @@ class CraftForgeBase:
             style=ft.ButtonStyle(
                 bgcolor={"": ft.colors.LIGHT_BLUE_200, "hovered": ft.colors.LIGHT_BLUE_400},
                 color={"": ft.colors.WHITE, "hovered": ft.colors.WHITE},
-                shape=ft.RoundedRectangleBorder(radius=10),
+                shape=ft.RoundedRectangleBorder(radius=30),
                 padding=ft.padding.all(10),
             ),
         )

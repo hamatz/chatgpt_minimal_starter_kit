@@ -107,8 +107,35 @@ class UIComponentToolkit(SystemPluginInterface):
                     bgcolor="#ffffff",
                     padding=10,
                     border_radius=10,
-                )                  
-            else:
+                )         
+            elif component_name == "GlossyFooter":
+                return ft.Container(
+                    content=ft.Column([
+                        ft.Text(component_name, size=18, weight="bold"),
+                        component_class(title_text=component_name),
+                    ]),
+                    alignment=ft.alignment.center,
+                    bgcolor="#ffffff",
+                    padding=10,
+                    border_radius=10,
+                )    
+            elif component_name == "CartoonButton":
+                return ft.Container(
+                    content=ft.Column([
+                        ft.Text(component_name, size=18, weight="bold"),
+                        component_class(
+                            "Click me",
+                            icon=ft.icons.FAVORITE,
+                            on_click=lambda _: print("Button clicked"),
+                            color={"": ft.colors.PINK_200, "hovered": ft.colors.PINK_400},
+                        ),
+                    ]),
+                    alignment=ft.alignment.center,
+                    bgcolor="#ffffff",
+                    padding=10,
+                    border_radius=10,
+                )     
+            else: 
                 return ft.Container(
                     content=ft.Column([
                         ft.Text(component_name, size=18, weight="bold"),
