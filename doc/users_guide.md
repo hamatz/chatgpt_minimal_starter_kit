@@ -1,7 +1,7 @@
 # 1. はじめに
 
 <div align="center">
-    <img src="doc/img/home.png" alt="Home" width="300" height="300">
+    <img src="img/home.png" alt="Home" width="300" height="300">
 </div>
    
 ## 1.1. CraftForgeの概要
@@ -56,7 +56,7 @@ CraftForgeは、実行可能ファイル (exe) の形式で配布されます。
 また、システム管理者の方々にとっても、ビルド済みの実行ファイルを配布することには大きなメリットがあります。ビルド済みの実行ファイルを使用する場合、ユーザーがPython Runtimeに対して勝手にライブラリを追加することはできません。これにより、システム管理者は、許可していないライブラリの使用を制限することができます。一方で、CraftForgeはPythonベースのプラットフォームであるため、Pythonを使いたいエンドユーザーのニーズにも応えることができます。つまり、CraftForgeは、「Pythonを使いたいエンドユーザーと許可していないライブラリの使用を制限したいシステム管理側」との間の妥協点となり得るのではないか？と考えています。
 
 <div align="center">
-    <img src="doc/img/office2.jpg" alt="Home" width="300" height="300">
+    <img src="img/office2.jpg" alt="Fig2" width="300" height="300">
 </div>
 
 ## 2.3. ユーザーインターフェースの概要
@@ -207,7 +207,7 @@ CraftForgeでは、プラグイン間でデータを共有する機能があり�
 ## 5.4. プラグイン間の連携と自動化
 
 <div align="center">
-    <img src="doc/img/pipes5.jpg" alt="Home" width="300" height="300">
+    <img src="img/pipes5.jpg" alt="Fig3" width="300" height="300">
 </div>
 
 CraftForgeには、プラグイン間で機能やデータを共有し、処理を自動化するための仕組みであるIntentConductorが備わっています。これにより、単独のプラグインでは実現が難しい複雑な処理を、複数のプラグインを組み合わせることで実現できます。
