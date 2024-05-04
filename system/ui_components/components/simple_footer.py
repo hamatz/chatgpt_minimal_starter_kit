@@ -13,5 +13,7 @@ class SimpleFooter(ft.UserControl):
             ], alignment="center"),
             bgcolor=self.color,
             padding=10,
-            border_radius=ft.border_radius.all(10),
+            border=ft.border.all(1, ft.colors.BLACK),
+            border_radius=ft.border_radius.all(30),
+            ink=True,  # ドロップシャドウ効果を追加
         )

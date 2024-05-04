@@ -2,7 +2,6 @@ import base64
 import os
 import flet as ft
 from interfaces.system_plugin_interface import SystemPluginInterface
-from ui_component_manager import UIComponentManager
 from system_api_layer import SystemAPI
 from intent_conductor import IntentConductor
 import uuid

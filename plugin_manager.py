@@ -11,22 +11,22 @@ import flet as ft
 from typing import Callable, Dict
 from interfaces.plugin_interface import PluginInterface
 from interfaces.system_plugin_interface import SystemPluginInterface
-from ui_component_manager import UIComponentManager
 from intent_conductor import IntentConductor
 from system_api_layer import SystemAPI
 from api import API
 from code_security_scanner import CodeSecurityScanner
+from ui_components.delete_confirm_dialog import DeleteConfirmDialog
+from ui_components.app_container import AppContainer
 
 PLUGIN_FOLDER = "installed_plugins"
 SYSTEM_PLUGIN_FOLDER = "system"
 
 class PluginManager:
 
-    def __init__(self, page: ft.Page, page_back : Callable[[], None], ui_manager: UIComponentManager, system_api: SystemAPI, base_dir: str, save_dir: str, api : API, intent_conductor: IntentConductor):
+    def __init__(self, page: ft.Page, page_back : Callable[[], None], system_api: SystemAPI, base_dir: str, save_dir: str, api : API, intent_conductor: IntentConductor):
         self.page = page
         self.page_back_func = page_back
         self.plugin_dict = {}
-        self.__ui_manager = ui_manager
         self.__system_api = system_api
         self.api = api
         self.intent_conductor = intent_conductor
@@ -78,24 +78,20 @@ class PluginManager:
             content=app_icon,
             on_tap=lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir, self.api)
         )
-        app_container_cmp = self.__ui_manager.get_component("app_container")
         app_title = plugin_info["name"]
         app_version = "Version: " + plugin_info["version"]
-        app_container_instance = app_container_cmp(app_title, app_version, clickable_image, "#ffffff" if "system" not in plugin_dir else "#20b2aa")
-        app_container_widget = app_container_instance.get_widget()
+        app_container_instance = AppContainer(app_title, app_version, clickable_image, "#ffffff" if "system" not in plugin_dir else "#20b2aa")
 
         if "system" in plugin_dir:
-            container.controls.append(app_container_widget)
+            container.controls.append(app_container_instance)
         else:
             plugin_name = plugin_info["plugin_name"]
             
             if plugin_name in self.plugin_dict:
-                # 既存のプラグインアイコンを更新
-                self.plugin_dict[plugin_name].content = app_container_widget
+                self.plugin_dict[plugin_name].content = app_container_instance
             else:
-                # 新しいプラグインアイコンを追加
                 deletable_app_container = ft.GestureDetector(
-                    content=app_container_widget,
+                    content=app_container_instance,
                     on_long_press_start=lambda e: self.show_delete_confirmation(plugin_dir, plugin_name)
                 )
                 container.controls.append(deletable_app_container)
@@ -189,15 +185,14 @@ class PluginManager:
             return
 
     def show_delete_confirmation(self, plugin_dir, unique_key) -> None:
-
+        print("show_delete_confirmation called")
         def close_dlg(e) -> None:
             self.page.dialog.open = False
             self.page.update()
         
-        dlg_component = self.__ui_manager.get_component("delete_confirm_dialog")
         delete_target = [plugin_dir, unique_key]
-        dlg_modal = dlg_component("プラグインの削除", "このプラグインを削除してもよろしいですか？", "いいえ", "はい", close_dlg, self.delete_plugin, delete_target)
-        self.page.dialog = dlg_modal.get_widget()
+        dlg_modal = DeleteConfirmDialog("プラグインの削除", "このプラグインを削除してもよろしいですか？", "いいえ", "はい", close_dlg, self.delete_plugin, delete_target)
+        self.page.dialog = dlg_modal.build()
         self.page.dialog.open = True
         self.page.update()
 

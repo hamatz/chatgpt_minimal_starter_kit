@@ -5,7 +5,6 @@ import re
 import flet as ft
 from interfaces.system_plugin_interface import SystemPluginInterface
 from typing import Callable
-from ui_component_manager import UIComponentManager
 from system_api_layer import SystemAPI
 from intent_conductor import IntentConductor
 from exceptions import ValidationError, DuplicateKeyError
