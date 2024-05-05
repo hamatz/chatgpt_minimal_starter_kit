@@ -5,12 +5,12 @@ from api import API
 from intent_conductor import IntentConductor
 from interfaces.plugin_interface import PluginInterface
 
-class PluginInstaller(PluginInterface):
+class DependencyInstaller(PluginInterface):
     _instance = None
 
     def __new__(cls, intent_conductor: IntentConductor, api):
         if cls._instance is None:
-            cls._instance = super(PluginInstaller, cls).__new__(cls)
+            cls._instance = super(DependencyInstaller, cls).__new__(cls)
             cls._instance.intent_conductor = intent_conductor
             cls._instance.api = api
         return cls._instance
@@ -35,7 +35,7 @@ class PluginInstaller(PluginInterface):
                 return component_class(**kwargs)
             else:
                 self.api.logger.error(f"component cannot be found: {component_name}")
-
+                
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
         with open(icon_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -44,42 +44,37 @@ class PluginInstaller(PluginInterface):
             content=app_icon,
             on_tap=lambda _: go_back_to_home(None)
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="PluginInstaller v.0.1.0", color="#20b2aa")
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="DependencyInstaller v.0.1.0", color="#20b2aa")
         page.add(my_header_widget)
 
-        def install_plugin(e):
-            plugin_url = plugin_url_textbox.value
-            if plugin_url:
-                try:
-                    self.api.logger.info(f"Installing plugin from: {plugin_url}")
-                    # Request plugin installation via PluginManagementProxy
-                    self.intent_conductor.send_event("install_plugin", {"plugin_url": plugin_url}, sender_plugin=self.__class__.__name__, target_plugin="PluginManagementProxy")
-                    self.page.snack_bar = ft.SnackBar(ft.Text(f"Plugin '{plugin_url}' installed successfully!"))
-                    self.page.snack_bar.open = True
-                    plugin_url_textbox.value = ""
-                    self.page.update()
-                except Exception as e:
-                    self.api.logger.error(f"Failed to install plugin: {str(e)}")
-                    self.page.snack_bar = ft.SnackBar(ft.Text(f"Failed to install plugin: {str(e)}"))
-                    self.page.snack_bar.open = True
-                    self.page.update()
+        def install_dependencies(e):
+            dependencies = [
+                {"name": "plugin1", "url": "https://example.com/plugins/plugin1.zip"},
+                {"name": "plugin2", "url": "https://example.com/plugins/plugin2.zip"},
+                {"name": "plugin3", "url": "https://example.com/plugins/plugin3.zip"}
+            ]
+            try:
+                self.api.logger.info(f"Installing dependencies: {dependencies}")
+                self.intent_conductor.send_event("install_dependencies", {"dependencies": dependencies}, sender_plugin=self.__class__.__name__, target_plugin="PluginManagementProxy")
+                self.page.snack_bar = ft.SnackBar(ft.Text("Dependencies installed successfully!"))
+                self.page.snack_bar.open = True
+                self.page.update()
+            except Exception as e:
+                self.api.logger.error(f"Failed to install dependencies: {str(e)}")
+                self.page.snack_bar = ft.SnackBar(ft.Text(f"Failed to install dependencies: {str(e)}"))
+                self.page.snack_bar.open = True
+                self.page.update()
 
-        plugin_url_textbox = get_component("CartoonTextBox", label="Plugin URL")
-        install_button = get_component("CartoonButton", text="Install",  on_click=install_plugin)
+        install_button = get_component("CartoonButton", text="Install Dependencies", on_click=install_dependencies)
 
         self.page.add(
             ft.Container(
-                content=ft.Text("Enter the plugin url to install:"),
-                alignment=ft.alignment.center_left,
+                content=ft.Text("Click the button to install dependencies:"),
+                alignment=ft.alignment.center,
             ),
             ft.Container(
-                content=ft.Column(
-                    [                       
-                        plugin_url_textbox,
-                        install_button,
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.END,
-                ),
+                content=install_button,
+                alignment=ft.alignment.center,
             )
         )
         

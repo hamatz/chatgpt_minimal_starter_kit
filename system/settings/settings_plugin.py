@@ -13,14 +13,15 @@ class SettingsPlugin(SystemPluginInterface):
 
     _instance = None
     
-    def __new__(cls, system_api : SystemAPI, intent_conductor: IntentConductor):
+    def __new__(cls, system_api : SystemAPI, intent_conductor: IntentConductor, api):
         if cls._instance is None:
             cls._instance = super(SettingsPlugin, cls).__new__(cls)
             cls._instance.system_api = system_api
             cls._instance.intent_conductor = intent_conductor
+            cls._instance.api = api
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page : Callable[[],None], plugin_dir_path: str, api):
+    def load(self, page: ft.Page, function_to_top_page : Callable[[],None], plugin_dir_path: str):
         MY_SYSTEM_NAME = "CraftForgeBase"
         MY_APP_NAME = "System_Settings"
         page.clean()
@@ -37,15 +38,15 @@ class SettingsPlugin(SystemPluginInterface):
             function_to_top_page()
 
         def get_component(component_name, **kwargs):
-            api.logger.info(f"Requesting component: {component_name}")
+            self.api.logger.info(f"Requesting component: {component_name}")
             target_component = {"component_name": component_name}
             response = self.intent_conductor.send_event("get_component", target_component, sender_plugin=self.__class__.__name__, target_plugin="UIComponentToolkit")
             if response:
                 component_class = response
-                api.logger.info(f"Received component: {component_name}")
+                self.api.logger.info(f"Received component: {component_name}")
                 return component_class(**kwargs)
             else:
-                api.logger.error(f"component cannot be found: {component_name}")
+                self.api.logger.error(f"component cannot be found: {component_name}")
 
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
         with open(icon_path, "rb") as image_file:

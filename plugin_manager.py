@@ -64,9 +64,9 @@ class PluginManager:
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
         # システムプラグインかどうかに基づき、インスタンスを作成
         if "system" in plugin_dir:
-            plugin_instance = plugin_class(self.__system_api, self.intent_conductor)
+            plugin_instance = plugin_class(self.__system_api, self.intent_conductor, self.api)
         else:
-            plugin_instance = plugin_class(self.intent_conductor)
+            plugin_instance = plugin_class(self.intent_conductor, self.api)
         # アイコン画像の読み込みとエンコード
         try:
             icon_path = os.path.join(plugin_dir, plugin_info["icon"])
@@ -79,7 +79,7 @@ class PluginManager:
         app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
         clickable_image = ft.GestureDetector(
             content=app_icon,
-            on_tap=lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir, self.api)
+            on_tap=lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir)
         )
         app_title = plugin_info["name"]
         app_version = "Version: " + plugin_info["version"]

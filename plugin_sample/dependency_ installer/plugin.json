@@ -1,0 +1,8 @@
+{
+    "name": "Dependency Installer",
+    "version": "0.1.0",
+    "description": "依存プラグインを一括インストールするサンプルプラグイン",
+    "main_module": "dependency_installer",
+    "plugin_name": "DependencyInstaller",
+    "icon": "icon.jpg"
+}

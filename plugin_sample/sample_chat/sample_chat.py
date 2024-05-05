@@ -8,13 +8,14 @@ from api import API
 class SampleChat(PluginInterface):
     _instance = None
     
-    def __new__(cls, intent_conductor):
+    def __new__(cls, intent_conductor, api):
         if cls._instance is None:
             cls._instance = super(SampleChat, cls).__new__(cls)
             cls._instance.intent_conductor = intent_conductor
+            cls._instance.api = api
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
 
         def get_answer(prompt, my_gpt_model):
             message=[{ "role": "user","content":prompt}]
@@ -27,15 +28,15 @@ class SampleChat(PluginInterface):
             return response
         
         def get_component(component_name, **kwargs):
-            api.logger.info(f"Requesting component: {component_name}")
+            self.api.logger.info(f"Requesting component: {component_name}")
             target_component = {"component_name": component_name}
             response = self.intent_conductor.send_event("get_component", target_component, sender_plugin=self.__class__.__name__, target_plugin="UIComponentToolkit")
             if response:
                 component_class = response
-                api.logger.info(f"Received component: {component_name}")
+                self.api.logger.info(f"Received component: {component_name}")
                 return component_class(**kwargs)
             else:
-                api.logger.error(f"component cannot be found: {component_name}")
+                self.api.logger.error(f"component cannot be found: {component_name}")
         
         page.clean()
         self.my_service = "OpenAI"
@@ -65,11 +66,11 @@ class SampleChat(PluginInterface):
 
         def set_gpt_client() -> None:
             if self.my_service == "OpenAI":
-                self.chat_client = api.ai.get_chat_gpt_instance()
-                self.my_gpt_model = api.ai.get_openai_gpt_model_name()
+                self.chat_client = self.api.ai.get_chat_gpt_instance()
+                self.my_gpt_model = self.api.ai.get_openai_gpt_model_name()
             elif self.my_service == "Azure":
-                self.chat_client = api.ai.get_azure_gpt_instance()
-                self.my_azure_deployment_name = api.ai.get_my_azure_deployment_name()
+                self.chat_client = self.api.ai.get_azure_gpt_instance()
+                self.my_azure_deployment_name = self.api.ai.get_my_azure_deployment_name()
 
         def reset_page_setting_and_close():
             page.horizontal_alignment = ft.CrossAxisAlignment.START

@@ -9,20 +9,20 @@ from intent_conductor import IntentConductor
 class PluginManagementProxy(SystemPluginInterface):
     _instance = None
 
-    def __new__(cls, system_api: SystemAPI, intent_conductor: IntentConductor):
+    def __new__(cls, system_api: SystemAPI, intent_conductor: IntentConductor, api):
         if cls._instance is None:
             cls._instance = super(PluginManagementProxy, cls).__new__(cls)
             cls._instance.system_api = system_api
+            cls._instance.api = api
             cls._instance.intent_conductor = intent_conductor
             cls._instance.plugin_manager = None
             cls._instance.intent_conductor.register_plugin("PluginManagementProxy", cls._instance)
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str, api):
+    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str):
         self.page = page
         self.page_back_func = function_to_top_page
         self.plugin_dir = plugin_dir_path
-        self.api = api
 
         page.clean()
 
@@ -30,15 +30,15 @@ class PluginManagementProxy(SystemPluginInterface):
             self.page_back_func()
 
         def get_component(component_name, **kwargs):
-            api.logger.info(f"Requesting component: {component_name}")
+            self.api.logger.info(f"Requesting component: {component_name}")
             target_component = {"component_name": component_name}
             response = self.intent_conductor.send_event("get_component", target_component, sender_plugin=self.__class__.__name__, target_plugin="UIComponentToolkit")
             if response:
                 component_class = response
-                api.logger.info(f"Received component: {component_name}")
+                self.api.logger.info(f"Received component: {component_name}")
                 return component_class(**kwargs)
             else:
-                api.logger.error(f"component cannot be found: {component_name}")
+                self.api.logger.error(f"component cannot be found: {component_name}")
 
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
         with open(icon_path, "rb") as image_file:
@@ -98,10 +98,6 @@ class PluginManagementProxy(SystemPluginInterface):
                 ),
                 padding=20,
             ),
-            # ft.Container(
-            #     content=ft.Text("登録済み接続先:", size=16),
-            #     padding=20,
-            # ),
             allowed_urls_view,
         )
 
