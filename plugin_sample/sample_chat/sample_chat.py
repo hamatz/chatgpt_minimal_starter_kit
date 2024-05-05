@@ -57,14 +57,9 @@ class SampleChat(PluginInterface):
         
         page.add(my_header_widget)
 
-        button = ft.ElevatedButton(text="決定", on_click=service_selected)
-        dropdown = ft.Dropdown(
-            width=100,
-            options=[
-                ft.dropdown.Option("OpenAI"),
-                ft.dropdown.Option("Azure"),
-            ],
-        )
+        #button = ft.ElevatedButton(text="決定", on_click=service_selected)
+        button = get_component("CartoonButton", text="決定", on_click=service_selected)
+        dropdown = get_component("CartoonDropdown", options=["OpenAI", "Azure"], value=self.my_service, on_change=service_selected, bg_color=ft.colors.YELLOW_300, txt_color=ft.colors.BLACK)
         button_container = ft.Row(spacing=5, controls=[dropdown, button], alignment=ft.MainAxisAlignment.END)
         page.add(button_container)
 
@@ -139,8 +134,14 @@ class SampleChat(PluginInterface):
             expand=True,
             on_change=lambda e:textbox_changed(e),
             on_submit=send_message_click,
+            border_color=ft.colors.BLACK,
+            text_style=ft.TextStyle(color=ft.colors.BLACK),
+            border_radius=ft.border_radius.all(30),
+            bgcolor=ft.colors.WHITE,
         )
+
         # Add everything to the page
+        send_button = get_component("CartoonButton", text="送信",  on_click=send_message_click)
         page.add(
             ft.Container(
                 content=chat,
@@ -152,11 +153,13 @@ class SampleChat(PluginInterface):
             ft.Row(
                 [
                     new_message,
-                    ft.IconButton(
-                        icon=ft.icons.SEND_ROUNDED,
-                        tooltip="Send message",
-                        on_click=send_message_click,
-                    ),
+                    send_button,
+                    # ft.IconButton(
+                    #     icon=ft.icons.SEND_ROUNDED,
+                    #     tooltip="Send message",
+                    #     on_click=send_message_click,
+                    #     #icon_color=ft.colors.LIGHT_BLUE_400,
+                    # ),
                 ]
             ),
         )

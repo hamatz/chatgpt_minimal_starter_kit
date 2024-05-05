@@ -15,5 +15,6 @@ class CartoonTextBox(ft.UserControl):
             text_style=ft.TextStyle(color=self.text_color),
             border_radius=ft.border_radius.all(30),
             filled=True,
+            expand=True,
             bgcolor=self.bgcolor,
         )

@@ -19,6 +19,7 @@ class CartoonDropdown(ft.UserControl):
             on_change=self.on_change_handler,
             color=self.txt_color,
             bgcolor=self.bg_color,
+            alignment=ft.alignment.center ,
             border_color=ft.colors.BLACK,
             filled=True,
             border_radius=30,
