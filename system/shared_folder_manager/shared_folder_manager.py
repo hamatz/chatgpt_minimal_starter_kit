@@ -73,15 +73,9 @@ class SharedFolderManager(SystemPluginInterface):
                 self.page.update()
                 self.load(self.page, self.page_back_func, self.plugin_dir, self.api)
             #事実上、何を選択してもフォルダパスを知った後は何でもできるので、現状は"write"で固定しておく
-            permission_dropdown = ft.Dropdown(
-                label="Permission",
-                options=[
-                    #ft.dropdown.Option("read"),
-                    ft.dropdown.Option("write"),
-                    #ft.dropdown.Option("execute"),
-                ],
-            )
-            grant_button = ft.ElevatedButton(text="アクセス許可するプラグインを選択する", on_click=grant_permission)
+            options = ["write"]
+            permission_dropdown = get_component("CartoonDropdown", options=options, value="write", on_change=None)
+            grant_button = get_component("CartoonButton", text="アクセス許可するプラグインを選択する",  on_click=grant_permission)
 
             permissions_view = ft.Column([])
             for plugin_name, permission_data in permissions.items():
@@ -105,7 +99,9 @@ class SharedFolderManager(SystemPluginInterface):
                             ft.Divider(),
                             permissions_view,
                         ],
-                        tight=True,
+                        #tight=True,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     ),
                     padding=10,
                 ),
@@ -176,9 +172,9 @@ class SharedFolderManager(SystemPluginInterface):
                     load_shared_folders()  # リストを更新
                     page.update()  # ページを更新
 
-            new_folder_name = ft.TextField(label="Folder Name")
-            new_folder_owner = ft.TextField(label="Owner Plugin")
-            folder_picker = ft.TextField(label="Folder Path", read_only=True, on_focus=lambda _: pick_folder())
+            new_folder_name = get_component("CartoonTextBox", label="Folder Name")
+            new_folder_owner = get_component("CartoonTextBox", label="Owner Plugin")
+            folder_picker = get_component("CartoonTextBox", label="Folder Path", on_focus=lambda _: pick_folder())
 
             def pick_folder():
                 dialog = ft.FilePicker(on_result=on_folder_selected)
@@ -192,7 +188,7 @@ class SharedFolderManager(SystemPluginInterface):
                     page.overlay.pop()
                     page.update()
 
-            create_button = ft.ElevatedButton(text="Create", on_click=create_folder)
+            create_button = get_component("CartoonButton", text="登録", icon=ft.icons.ADMIN_PANEL_SETTINGS,  on_click=create_folder)
 
             bottom_sheet = ft.BottomSheet(
                 ft.Container(
@@ -203,9 +199,11 @@ class SharedFolderManager(SystemPluginInterface):
                             folder_picker,
                             create_button,
                         ],
-                        tight=True,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     ),
                     padding=10,
+                    alignment=ft.alignment.center,
                 ),
                 open=True,
             )
