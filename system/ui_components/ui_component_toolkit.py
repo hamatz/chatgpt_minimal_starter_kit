@@ -134,7 +134,83 @@ class UIComponentToolkit(SystemPluginInterface):
                     bgcolor="#ffffff",
                     padding=10,
                     border_radius=10,
+                ) 
+            elif component_name == "CartoonCheckbox":
+                return ft.Container(
+                    content=ft.Column([
+                        ft.Text(component_name, size=18, weight="bold"),
+                        component_class(
+                            "check here",
+                            color=ft.colors.PINK_400,
+                        ),
+                    ]),
+                    alignment=ft.alignment.center,
+                    bgcolor="#ffffff",
+                    padding=10,
+                    border_radius=10,
                 )     
+            elif component_name == "CartoonRadioGroup":
+                options = ["Red", "Green", "Blue"]
+                return ft.Container(
+                    content=ft.Column([
+                        ft.Text(component_name, size=18, weight="bold"),
+                        component_class(
+                            options=options,
+                            value="Green", 
+                            on_change=lambda e: print(e.control.value),
+                            color=ft.colors.PINK_400,
+                        ),
+                    ]),
+                    alignment=ft.alignment.center,
+                    bgcolor="#ffffff",
+                    padding=10,
+                    border_radius=10,
+                )  
+            elif component_name == "CartoonDropdown":
+                options = ["Red", "Green", "Blue"]
+                return ft.Container(
+                    content=ft.Column([
+                        ft.Text(component_name, size=18, weight="bold"),
+                        component_class(
+                            options=options,
+                            value="Green", 
+                            on_change=lambda e: print(e.control.value),
+                        ),
+                    ]),
+                    alignment=ft.alignment.center,
+                    bgcolor="#ffffff",
+                    padding=10,
+                    border_radius=10,
+                )  
+            elif component_name == "CartoonSlider":
+                return ft.Container(
+                    content=ft.Column([
+                        ft.Text(component_name, size=18, weight="bold"),
+                        component_class(
+                            0,
+                            100, 
+                            on_change=lambda e: print(e.control.value),
+                        ),
+                    ]),
+                    alignment=ft.alignment.center,
+                    bgcolor="#ffffff",
+                    padding=10,
+                    border_radius=10,
+                )  
+            elif component_name == "CartoonSwitch":
+                return ft.Container(
+                    content=ft.Column([
+                        ft.Text(component_name, size=18, weight="bold"),
+                        component_class(
+                            component_name,
+                            color=ft.colors.PINK_400, 
+                        ),
+                    ]),
+                    alignment=ft.alignment.center,
+                    bgcolor="#ffffff",
+                    padding=10,
+                    border_radius=10,
+                ) 
             else: 
                 return ft.Container(
                     content=ft.Column([
