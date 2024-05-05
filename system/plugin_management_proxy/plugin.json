@@ -1,0 +1,8 @@
+{
+    "name": "PluginManagementProxy",
+    "version": "0.1.0",
+    "description": "PluginManagerと中継してリモートにあるプラグインをインストールします",
+    "main_module": "plugin_management_proxy",
+    "plugin_name": "PluginManagementProxy",
+    "icon": "icon.jpg"
+}

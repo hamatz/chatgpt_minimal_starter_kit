@@ -1,6 +1,6 @@
 {
     "name": "シンプル計算機",
-    "version": "0.0.2",
+    "version": "0.1.0",
     "description": "シンプルな計算機アプリです",
     "main_module": "sample_plugin_2",
     "plugin_name": "SamplePlugin2",

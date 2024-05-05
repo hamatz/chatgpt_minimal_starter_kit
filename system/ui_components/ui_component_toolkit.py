@@ -11,11 +11,12 @@ class UIComponentToolkit(SystemPluginInterface):
 
     _instance = None
 
-    def __new__(cls, system_api : SystemAPI, intent_conductor: IntentConductor):
+    def __new__(cls, system_api : SystemAPI, intent_conductor: IntentConductor, api):
         if cls._instance is None:
             cls._instance = super(UIComponentToolkit, cls).__new__(cls)
             cls._instance.system_api = system_api
             cls._instance.intent_conductor = intent_conductor
+            cls._instance.api=api
             cls._instance.component_dir = "system/ui_components/components"
             cls._instance.components = {}
             cls._instance.load_components()
@@ -48,7 +49,7 @@ class UIComponentToolkit(SystemPluginInterface):
     def send_event(self, event_name, data, target_plugin=None):
         self.intent_conductor.send_event(event_name, data, target_plugin)
 
-    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str, api):
+    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str):
         page.clean()
 
         icon_path = os.path.join(plugin_dir_path, "back_button.png")

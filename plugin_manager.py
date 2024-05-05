@@ -9,6 +9,8 @@ import json
 import importlib
 import flet as ft
 from typing import Callable, Dict
+
+import requests
 from interfaces.plugin_interface import PluginInterface
 from interfaces.system_plugin_interface import SystemPluginInterface
 from intent_conductor import IntentConductor
@@ -33,8 +35,9 @@ class PluginManager:
         self.plugin_folder_path = os.path.join(save_dir, PLUGIN_FOLDER)
         self.system_plugin_folder_path = os.path.join(base_dir, SYSTEM_PLUGIN_FOLDER)
         self.myapp_container = None
-        self.installed_plugins: Dict[str, str] = {}  # 追加: インストール済みプラグインの辞書 {plugin_name: plugin_dir}
+        self.installed_plugins: Dict[str, str] = {} 
         self.load_installed_plugins_info()
+        
         if not os.path.exists(self.plugin_folder_path):
             os.makedirs(self.plugin_folder_path)
         if not os.path.exists(self.system_plugin_folder_path):
@@ -61,9 +64,9 @@ class PluginManager:
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
         # システムプラグインかどうかに基づき、インスタンスを作成
         if "system" in plugin_dir:
-            plugin_instance = plugin_class(self.__system_api, self.intent_conductor)
+            plugin_instance = plugin_class(self.__system_api, self.intent_conductor, self.api)
         else:
-            plugin_instance = plugin_class(self.intent_conductor)
+            plugin_instance = plugin_class(self.intent_conductor, self.api)
         # アイコン画像の読み込みとエンコード
         try:
             icon_path = os.path.join(plugin_dir, plugin_info["icon"])
@@ -76,7 +79,7 @@ class PluginManager:
         app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
         clickable_image = ft.GestureDetector(
             content=app_icon,
-            on_tap=lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir, self.api)
+            on_tap=lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir)
         )
         app_title = plugin_info["name"]
         app_version = "Version: " + plugin_info["version"]
@@ -117,6 +120,7 @@ class PluginManager:
         plugin_folder_name = picked_file.name[:-4] + unique_key  # ".zip"拡張子を除去してからunique_keyをつなげる
         plugin_dir = os.path.join(self.plugin_folder_path, plugin_folder_name)
         os.makedirs(plugin_dir, exist_ok=True)
+
         # ZIPファイルを解凍
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -124,65 +128,107 @@ class PluginManager:
                 shutil.copy(picked_file_path, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(plugin_dir)
-                with open(os.path.join(plugin_dir, "plugin.json"), 'r', encoding='utf-8') as f:
-                    plugin_info = json.load(f)
 
-                plugin_name = plugin_info["plugin_name"]
-
-                if plugin_name in self.installed_plugins:
-                    def overwrite_plugin(choice):
-                        if choice == "yes":
-                            old_plugin_dir = self.installed_plugins[plugin_name]
-                            
-                            # 古いプラグインのディレクトリ内のファイルを削除
-                            for filename in os.listdir(old_plugin_dir):
-                                file_path = os.path.join(old_plugin_dir, filename)
-                                if os.path.isfile(file_path) or os.path.islink(file_path):
-                                    os.unlink(file_path)
-                                elif os.path.isdir(file_path):
-                                    shutil.rmtree(file_path)
-                            
-                            # 新しいプラグインのファイルを古いディレクトリにコピー
-                            for filename in os.listdir(plugin_dir):
-                                src_path = os.path.join(plugin_dir, filename)
-                                dst_path = os.path.join(old_plugin_dir, filename)
-                                if os.path.isfile(src_path) or os.path.islink(src_path):
-                                    shutil.copy2(src_path, dst_path)
-                                elif os.path.isdir(src_path):
-                                    shutil.copytree(src_path, dst_path)
-                            
-                            shutil.rmtree(plugin_dir)
-                            self._load_plugin(old_plugin_dir, container)
-                        else:
-                            shutil.rmtree(plugin_dir)
-                        self.page.dialog.open = False
-                        self.page.update()
-
-                    confirm_dialog = ft.AlertDialog(
-                        title=ft.Text("上書きインストールの確認"),
-                        content=ft.Text(f"同じ名前のプラグイン '{plugin_name}' が既にインストールされています。上書きインストールしますか？"),
-                        actions=[
-                            ft.TextButton("はい", on_click=lambda _: overwrite_plugin("yes")),
-                            ft.TextButton("いいえ", on_click=lambda _: overwrite_plugin("no")),
-                        ],
-                        actions_alignment=ft.MainAxisAlignment.END,
-                    )
-                    self.page.dialog = confirm_dialog
-                    self.page.dialog.open = True
-                    self.page.update()
-                else:
-                    # セキュリティスキャンを実行
-                    if not CodeSecurityScanner.scan_for_forbidden_functions(plugin_dir):
-                        self.api.logger.error("Security check failed: Forbidden functions found in the plugin code.")
-                        raise Exception("Security check failed: Forbidden functions found in the plugin code.")
-                    self.api.logger.info(f"Security check passed for plugin: {plugin_dir}")
-                    self._load_plugin(plugin_dir, container)
-                    self.installed_plugins[plugin_name] = plugin_dir
+            self.install_plugin_from_path(plugin_dir, container)
         except Exception as e:
             self.api.logger.error(f"Plugin installation failed: {e}")
             # インストールに失敗した場合は展開したフォルダを削除
             shutil.rmtree(plugin_dir, ignore_errors=True)
-            return
+
+    def install_plugin_from_url(self, plugin_url: str):
+        self.api.logger.info(f"install plugin from: {plugin_url} on PluginManager")
+        try:
+            # URLからプラグインをダウンロード
+            response = requests.get(plugin_url)
+            response.raise_for_status()
+
+            # 一時ディレクトリにプラグインを保存
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                temp_file.write(response.content)
+                temp_file_path = temp_file.name
+
+            # 一時ディレクトリにプラグインを展開
+            with tempfile.TemporaryDirectory() as temp_dir:
+                with zipfile.ZipFile(temp_file_path, 'r') as zip_ref:
+                    zip_ref.extractall(temp_dir)
+
+                # 展開されたプラグインのパスを取得
+                plugin_dir = os.path.join(temp_dir, os.listdir(temp_dir)[0])
+
+                # プラグインをインストール
+                self.install_plugin_from_path(plugin_dir, self.myapp_container)
+
+            # 一時ファイルを削除
+            os.unlink(temp_file_path)
+        except Exception as e:
+            self.api.logger.error(f"Failed to install plugin from URL: {str(e)}")
+
+    def install_plugin_from_path(self, plugin_path: str, container: ft.Container):
+        try:
+            self.process_plugin_installation(plugin_path, container)
+        except Exception as e:
+            self.api.logger.error(f"Plugin installation failed: {e}")
+            shutil.rmtree(plugin_path, ignore_errors=True)
+
+    def process_plugin_installation(self, plugin_dir, container: ft.Container):
+        with open(os.path.join(plugin_dir, "plugin.json"), 'r', encoding='utf-8') as f:
+            plugin_info = json.load(f)
+
+        plugin_name = plugin_info["plugin_name"]
+
+        if plugin_name in self.installed_plugins:
+            self.handle_plugin_overwrite(plugin_name, plugin_dir, container)
+        else:
+            self.complete_plugin_installation(plugin_dir, plugin_name, container)
+
+    def handle_plugin_overwrite(self, plugin_name, plugin_dir, container: ft.Container):
+        def overwrite_plugin(choice):
+            if choice == "yes":
+                old_plugin_dir = self.installed_plugins[plugin_name]
+                self.replace_plugin_files(old_plugin_dir, plugin_dir)
+                shutil.rmtree(plugin_dir)
+                self._load_plugin(old_plugin_dir, container)
+            else:
+                shutil.rmtree(plugin_dir)
+            self.page.dialog.open = False
+            self.page.update()
+
+        confirm_dialog = ft.AlertDialog(
+            title=ft.Text("上書きインストールの確認"),
+            content=ft.Text(f"同じ名前のプラグイン '{plugin_name}' が既にインストールされています。上書きインストールしますか？"),
+            actions=[
+                ft.TextButton("はい", on_click=lambda _: overwrite_plugin("yes")),
+                ft.TextButton("いいえ", on_click=lambda _: overwrite_plugin("no")),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        self.page.dialog = confirm_dialog
+        self.page.dialog.open = True
+        self.page.update()
+
+    def complete_plugin_installation(self, plugin_dir, plugin_name, container: ft.Container):
+        if not CodeSecurityScanner.scan_for_forbidden_functions(plugin_dir):
+            self.api.logger.error("Security check failed: Forbidden functions found in the plugin code.")
+            raise Exception("Security check failed: Forbidden functions found in the plugin code.")
+        self.api.logger.info(f"Security check passed for plugin: {plugin_dir}")
+        self._load_plugin(plugin_dir, container)
+        self.installed_plugins[plugin_name] = plugin_dir
+
+    def replace_plugin_files(self, old_plugin_dir, new_plugin_dir):
+        for filename in os.listdir(old_plugin_dir):
+            file_path = os.path.join(old_plugin_dir, filename)
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+
+        for filename in os.listdir(new_plugin_dir):
+            src_path = os.path.join(new_plugin_dir, filename)
+            dst_path = os.path.join(old_plugin_dir, filename)
+            if os.path.isfile(src_path) or os.path.islink(src_path):
+                shutil.copy2(src_path, dst_path)
+            elif os.path.isdir(src_path):
+                shutil.copytree(src_path, dst_path)
 
     def show_delete_confirmation(self, plugin_dir, unique_key) -> None:
         print("show_delete_confirmation called")
@@ -248,3 +294,6 @@ class PluginManager:
             plugin_dir = os.path.join(self.system_plugin_folder_path, plugin_name)
             if os.path.isdir(plugin_dir):
                 self._load_plugin(plugin_dir, container)
+        plugin_management_proxy = self.intent_conductor.send_event("set_plugin_manager", self, sender_plugin=self.__class__.__name__, target_plugin="PluginManagementProxy")
+        if plugin_management_proxy is not None:
+            plugin_management_proxy.set_plugin_manager(self)
