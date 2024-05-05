@@ -7,14 +7,14 @@ class CartoonSwitch(ft.UserControl):
         self.value = value
         self.on_change = on_change
         self.color = kwargs.get("color", ft.colors.BLUE_500)
+        self.disabled= kwargs.get("disabled", False)
 
     def build(self):
         return ft.Row(
             controls=[
-                ft.Switch(value=self.value, on_change=self.on_change_handler, active_color=self.color),
+                ft.Switch(value=self.value, on_change=self.on_change_handler, active_color=self.color, disabled=self.disabled),
                 ft.Text(self.label),
             ],
-            alignment=ft.MainAxisAlignment.CENTER,
         )
 
     def on_change_handler(self, e):

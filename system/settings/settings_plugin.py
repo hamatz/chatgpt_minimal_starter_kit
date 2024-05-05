@@ -129,7 +129,8 @@ class SettingsPlugin(SystemPluginInterface):
                 title=ft.Text("CraftForge" + "   " + my_version_info),
             )
             page.add(title_bar)
-            debug_mode_toggle = ft.Switch(label="Debug Mode", value=self.system_api.debug.is_debug_mode(), on_change=toggle_debug_mode)
+            #debug_mode_toggle = ft.Switch(label="Debug Mode", value=self.system_api.debug.is_debug_mode(), on_change=toggle_debug_mode)
+            debug_mode_toggle = get_component("CartoonSwitch", label="Debug Mode", value=self.system_api.debug.is_debug_mode(), on_change=toggle_debug_mode)
             debug_toggle_row = ft.Row(spacing=5, controls=[debug_mode_toggle], alignment=ft.MainAxisAlignment.END)
             page.add(debug_toggle_row)
 
@@ -183,12 +184,18 @@ class SettingsPlugin(SystemPluginInterface):
                 bottom_sheet.open = False
                 bottom_sheet.update()
 
-            tb1 = ft.TextField(label="設定情報名（英数字）")
-            tb2 = ft.TextField(label="設定情報要素名")
-            tb3 = ft.TextField(label="設定情報の中身")
-            tb4 = ft.TextField(label="説明文")
-            tb5 = ft.Switch(label="暗号化要否", value=True, disabled=False)
-            b = ft.ElevatedButton(text="登録する", on_click=add_new_info)
+            #tb1 = ft.TextField(label="設定情報名（英数字）")
+            tb1 =  get_component("CartoonTextBox", label="設定情報名（英数字）")
+            #tb2 = ft.TextField(label="設定情報要素名")
+            tb2 =  get_component("CartoonTextBox", label="設定情報要素名")
+            #tb3 = ft.TextField(label="設定情報の中身")
+            tb3 =  get_component("CartoonTextBox", label="設定情報の中身")
+            #tb4 = ft.TextField(label="説明文")
+            tb4 =  get_component("CartoonTextBox", label="説明文")
+            #tb5 = ft.Switch(label="暗号化要否", value=True, disabled=False)
+            tb5 =  get_component("CartoonSwitch", label="暗号化要否", value=True, disabled=False)
+            #b = ft.ElevatedButton(text="登録する", on_click=add_new_info)
+            b = get_component("CartoonButton", text="登録する", icon=ft.icons.ADMIN_PANEL_SETTINGS,  on_click=add_new_info)
 
             def bs_dismissed(e):
                 print("New Param was saved!")
@@ -201,11 +208,22 @@ class SettingsPlugin(SystemPluginInterface):
                 ft.Container(
                     ft.Column(
                         [
-                            tb1,tb2,tb3,tb4,tb5,b,
+                            ft.Column(
+                                [
+                                    tb1,tb2,tb3,tb4,tb5
+                                ],
+                            ),
+                            ft.Column(
+                                [
+                                    b,
+                                ],
+                            ),
                         ],
-                        tight=True,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     ),
                     padding=10,
+                    alignment=ft.alignment.center,
                 ),
                 open=False,
                 on_dismiss=bs_dismissed,
