@@ -18,6 +18,8 @@ class IntentConductor:
             # 受け取り先プラグイン指定でのイベント送信はレスポンスを期待して呼び出されていると考えて結果をreurnする
             if plugin:
                 return plugin.handle_event(event_name, data, sender_plugin)
+            else:
+                return None
         else:
             for plugin_name, plugin in self.plugins.items():
                 if plugin_name != sender_plugin:

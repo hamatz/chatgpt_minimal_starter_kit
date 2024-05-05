@@ -1,0 +1,8 @@
+{
+    "name": "Plugin Installer",
+    "version": "0.1.0",
+    "description": "リモートにあるプラグインをインストールします",
+    "main_module": "plugin_installer",
+    "plugin_name": "PluginInstaller",
+    "icon": "icon.jpg"
+}

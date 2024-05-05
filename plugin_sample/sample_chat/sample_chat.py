@@ -154,12 +154,6 @@ class SampleChat(PluginInterface):
                 [
                     new_message,
                     send_button,
-                    # ft.IconButton(
-                    #     icon=ft.icons.SEND_ROUNDED,
-                    #     tooltip="Send message",
-                    #     on_click=send_message_click,
-                    #     #icon_color=ft.colors.LIGHT_BLUE_400,
-                    # ),
                 ]
             ),
         )
