@@ -54,7 +54,7 @@ class SampleChat(PluginInterface):
             content=app_icon,
             on_tap= lambda _: reset_page_setting_and_close()
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text= "Sample Chat v.0.1.0", color="#20b2aa")
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text= "Sample Chat v.0.2.0", color="#20b2aa")
         
         page.add(my_header_widget)
 
