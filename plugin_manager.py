@@ -156,12 +156,14 @@ class PluginManager:
                 plugin_dir = os.path.join(temp_dir, os.listdir(temp_dir)[0])
 
                 # プラグインをインストール
-                self.install_plugin_from_path(plugin_dir, self.myapp_container)
+                return self.process_plugin_installation(plugin_dir, self.myapp_container)
 
-            # 一時ファイルを削除
-            os.unlink(temp_file_path)
         except Exception as e:
             self.api.logger.error(f"Failed to install plugin from URL: {str(e)}")
+            return False
+        finally:
+            # 一時ファイルを削除
+            os.unlink(temp_file_path)
 
     def install_plugin_from_path(self, plugin_path: str, container: ft.Container):
         try:
@@ -178,9 +180,10 @@ class PluginManager:
         plugin_version = plugin_info["version"]
 
         if plugin_name in self.installed_plugins:
-            self.handle_plugin_overwrite(plugin_name, plugin_version, plugin_dir, container)
+            return self.handle_plugin_overwrite(plugin_name, plugin_version, plugin_dir, container)
         else:
             self.complete_plugin_installation(plugin_dir, plugin_name, container)
+            return True
 
     def handle_plugin_overwrite(self, plugin_name, new_version, plugin_dir, container: ft.Container):
         old_plugin_dir = self.installed_plugins[plugin_name]
@@ -190,13 +193,11 @@ class PluginManager:
             old_plugin_info = json.load(f)
         current_version = old_plugin_info["version"]
 
+        result = None
+
         def overwrite_plugin(choice):
-            if choice == "yes":
-                self.replace_plugin_files(old_plugin_dir, plugin_dir)
-                shutil.rmtree(plugin_dir)
-                self._load_plugin(old_plugin_dir, container)
-            else:
-                shutil.rmtree(plugin_dir)
+            nonlocal result
+            result = choice == "yes"
             self.page.dialog.open = False
             self.page.update()
 
@@ -212,6 +213,26 @@ class PluginManager:
         self.page.dialog = confirm_dialog
         self.page.dialog.open = True
         self.page.update()
+
+        while result is None:
+            self.page.update()
+
+        if result:
+            self.replace_plugin_files(old_plugin_dir, plugin_dir)
+            try:
+                if os.path.exists(plugin_dir):
+                    shutil.rmtree(plugin_dir)
+            except FileNotFoundError:
+                pass
+            self._load_plugin(old_plugin_dir, container)
+        else:
+            try:
+                if os.path.exists(plugin_dir):
+                    shutil.rmtree(plugin_dir)
+            except FileNotFoundError:
+                pass
+
+        return result
 
     def complete_plugin_installation(self, plugin_dir, plugin_name, container: ft.Container):
         if not CodeSecurityScanner.scan_for_forbidden_functions(plugin_dir):
