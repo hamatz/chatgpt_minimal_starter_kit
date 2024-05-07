@@ -175,16 +175,23 @@ class PluginManager:
             plugin_info = json.load(f)
 
         plugin_name = plugin_info["plugin_name"]
+        plugin_version = plugin_info["version"]
 
         if plugin_name in self.installed_plugins:
-            self.handle_plugin_overwrite(plugin_name, plugin_dir, container)
+            self.handle_plugin_overwrite(plugin_name, plugin_version, plugin_dir, container)
         else:
             self.complete_plugin_installation(plugin_dir, plugin_name, container)
 
-    def handle_plugin_overwrite(self, plugin_name, plugin_dir, container: ft.Container):
+    def handle_plugin_overwrite(self, plugin_name, new_version, plugin_dir, container: ft.Container):
+        old_plugin_dir = self.installed_plugins[plugin_name]
+
+        # 現在のバージョンを取得
+        with open(os.path.join(old_plugin_dir, "plugin.json"), 'r', encoding='utf-8') as f:
+            old_plugin_info = json.load(f)
+        current_version = old_plugin_info["version"]
+
         def overwrite_plugin(choice):
             if choice == "yes":
-                old_plugin_dir = self.installed_plugins[plugin_name]
                 self.replace_plugin_files(old_plugin_dir, plugin_dir)
                 shutil.rmtree(plugin_dir)
                 self._load_plugin(old_plugin_dir, container)
@@ -195,7 +202,7 @@ class PluginManager:
 
         confirm_dialog = ft.AlertDialog(
             title=ft.Text("上書きインストールの確認"),
-            content=ft.Text(f"同じ名前のプラグイン '{plugin_name}' が既にインストールされています。上書きインストールしますか？"),
+            content=ft.Text(f"同じ名前のプラグイン '{plugin_name}' が既にインストールされています。\n現在のバージョン: {current_version}\n新しいバージョン: {new_version}\n\n上書きインストールしますか？"),
             actions=[
                 ft.TextButton("はい", on_click=lambda _: overwrite_plugin("yes")),
                 ft.TextButton("いいえ", on_click=lambda _: overwrite_plugin("no")),
