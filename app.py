@@ -13,8 +13,8 @@ from ui_components.simple_footer import SimpleFooter
 
 MY_SYSTEM_NAME = "CraftForgeBase"
 SYSTEM_FILENAME = "system_shared_data.json"
-VERSION = "0.1.7"
-BUILD_NUMBER = "5"
+VERSION = "0.1.8"
+BUILD_NUMBER = "6"
 MY_KEY_FILENAME = "my_app_info.json"
 HAKONIWA = False
 
@@ -35,7 +35,7 @@ class CraftForgeBase:
         def pick_file_and_install(e: ft.FilePickerResultEvent):
             self.pm.install_plugin(e, main_container)
  
-        my_header_widget = SimpleHeader(icon=ft.icons.MENU_ROUNDED, title_text="CraftForge v.0.1.7", color="#20b2aa")
+        my_header_widget = SimpleHeader(icon=ft.icons.MENU_ROUNDED, title_text="CraftForge v.0.1.8", color="#20b2aa")
         my_footer_widget = SimpleFooter(title_text="@hamatz", color="#20b2aa")
         self.page.add(my_header_widget)
         main_container = ft.GridView(

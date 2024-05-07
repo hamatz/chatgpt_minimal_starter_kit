@@ -124,15 +124,74 @@ class SettingsPlugin(SystemPluginInterface):
             app_icon_path = os.path.join(plugin_dir_path, "app_icon.png")
             with open(app_icon_path, "rb") as app_image_file:
                 encoded_image_string = base64.b64encode(app_image_file.read()).decode("utf-8")
-                my_app_icon = ft.Image(src_base64=encoded_image_string, width=45, height=45,  fit="contain")
-            title_bar = ft.ListTile(
-                leading=my_app_icon,
-                title=ft.Text("CraftForge" + "   " + my_version_info),
+                my_app_icon = ft.Image(src_base64=encoded_image_string, width=50, height=50,  fit="contain")
+            title_bar = ft.Container(
+                ft.ListTile(
+                    leading=my_app_icon,
+                    title=ft.Text("CraftForge" + "   " + my_version_info),
+                ),
+                padding=10,
             )
             page.add(title_bar)
-            #debug_mode_toggle = ft.Switch(label="Debug Mode", value=self.system_api.debug.is_debug_mode(), on_change=toggle_debug_mode)
+
+            def add_new_info(e):
+                add_new_setting(self.settings_info_dict,tb1.value,tb2.value,tb3.value,tb4.value,tb5.value)
+                bottom_sheet.open = False
+                bottom_sheet.update()
+
+            #tb1 = ft.TextField(label="設定情報名（英数字）")
+            tb1 =  get_component("CartoonTextBox", label="設定情報名（英数字）")
+            #tb2 = ft.TextField(label="設定情報要素名")
+            tb2 =  get_component("CartoonTextBox", label="設定情報要素名")
+            #tb3 = ft.TextField(label="設定情報の中身")
+            tb3 =  get_component("CartoonTextBox", label="設定情報の中身")
+            #tb4 = ft.TextField(label="説明文")
+            tb4 =  get_component("CartoonTextBox", label="説明文")
+            #tb5 = ft.Switch(label="暗号化要否", value=True, disabled=False)
+            tb5 =  get_component("CartoonSwitch", label="暗号化要否", value=True, disabled=False)
+            #b = ft.ElevatedButton(text="登録する", on_click=add_new_info)
+            b = get_component("CartoonButton", text="登録する", icon=ft.icons.ADMIN_PANEL_SETTINGS,  on_click=add_new_info)
+
+            def bs_dismissed(e):
+                self.api.logger.info("editsheet was closed")
+
+            def show_edit_sheet(e):
+                bottom_sheet.open = True
+                bottom_sheet.update()
+
+            bottom_sheet = ft.BottomSheet(
+                ft.Container(
+                    ft.Column(
+                        [
+                            ft.Column(
+                                [
+                                    tb1,tb2,tb3,tb4,tb5
+                                ],
+                            ),
+                            ft.Column(
+                                [
+                                    b,
+                                ],
+                            ),
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    padding=10,
+                    alignment=ft.alignment.center,
+                ),
+                open=False,
+                on_dismiss=bs_dismissed,
+            )
+            page.overlay.append(bottom_sheet)
+            self.bottom_sheet = bottom_sheet
+
+            add_button = get_component("CartoonButton", text="+", on_click=show_edit_sheet)
             debug_mode_toggle = get_component("CartoonSwitch", label="Debug Mode", value=self.system_api.debug.is_debug_mode(), on_change=toggle_debug_mode)
-            debug_toggle_row = ft.Row(spacing=5, controls=[debug_mode_toggle], alignment=ft.MainAxisAlignment.END)
+            debug_toggle_row = ft.Container(
+                content=ft.Row(spacing=5, controls=[debug_mode_toggle, add_button], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                padding=ft.padding.only(left=20, right=20), 
+            )
             page.add(debug_toggle_row)
 
             scrollable_container = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO)
@@ -174,70 +233,18 @@ class SettingsPlugin(SystemPluginInterface):
                     exp = ft.ExpansionPanel(
                         bgcolor=ft.colors.BLUE_50,
                         header=ft.ListTile(title=ft.Text(title)),
-                        content=content_container, 
+                        content=content_container,
                     )
                     panel.controls.append(exp)
             scrollable_container.controls.append(panel)
-            page.add(scrollable_container)
 
-            def add_new_info(e):
-                add_new_setting(self.settings_info_dict,tb1.value,tb2.value,tb3.value,tb4.value,tb5.value)
-                bottom_sheet.open = False
-                bottom_sheet.update()
-
-            #tb1 = ft.TextField(label="設定情報名（英数字）")
-            tb1 =  get_component("CartoonTextBox", label="設定情報名（英数字）")
-            #tb2 = ft.TextField(label="設定情報要素名")
-            tb2 =  get_component("CartoonTextBox", label="設定情報要素名")
-            #tb3 = ft.TextField(label="設定情報の中身")
-            tb3 =  get_component("CartoonTextBox", label="設定情報の中身")
-            #tb4 = ft.TextField(label="説明文")
-            tb4 =  get_component("CartoonTextBox", label="説明文")
-            #tb5 = ft.Switch(label="暗号化要否", value=True, disabled=False)
-            tb5 =  get_component("CartoonSwitch", label="暗号化要否", value=True, disabled=False)
-            #b = ft.ElevatedButton(text="登録する", on_click=add_new_info)
-            b = get_component("CartoonButton", text="登録する", icon=ft.icons.ADMIN_PANEL_SETTINGS,  on_click=add_new_info)
-
-            def bs_dismissed(e):
-                print("New Param was saved!")
-
-            def show_edit_sheet(e):
-                bottom_sheet.open = True
-                bottom_sheet.update()
-
-            bottom_sheet = ft.BottomSheet(
-                ft.Container(
-                    ft.Column(
-                        [
-                            ft.Column(
-                                [
-                                    tb1,tb2,tb3,tb4,tb5
-                                ],
-                            ),
-                            ft.Column(
-                                [
-                                    b,
-                                ],
-                            ),
-                        ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                    padding=10,
-                    alignment=ft.alignment.center,
-                ),
-                open=False,
-                on_dismiss=bs_dismissed,
+            body_container = ft.Container(
+                content=scrollable_container,
+                padding=ft.padding.only(left=20, right=20),  # 左右に余白を設定
+                expand=True,  # コンテナをページ全体に広げる
+                border_radius=20,
             )
-            page.overlay.append(bottom_sheet)
-            self.bottom_sheet = bottom_sheet
-
-            def fab_pressed(e):
-                show_edit_sheet(e)
-
-            page.floating_action_button = ft.FloatingActionButton(
-                icon=ft.icons.ADD, on_click=fab_pressed, bgcolor=ft.colors.WHITE30,
-            )
+            page.add(body_container)
 
         load_system_info()
         page.update()
