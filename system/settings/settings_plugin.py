@@ -24,6 +24,7 @@ class SettingsPlugin(SystemPluginInterface):
     def load(self, page: ft.Page, function_to_top_page : Callable[[],None], plugin_dir_path: str):
         MY_SYSTEM_NAME = "CraftForgeBase"
         MY_APP_NAME = "System_Settings"
+        APP_TITLE = "システム設定"
         page.clean()
 
         def toggle_debug_mode(e):
@@ -56,7 +57,7 @@ class SettingsPlugin(SystemPluginInterface):
             content=app_icon,
             on_tap= lambda _: reset_page_setting_and_close()
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text=MY_APP_NAME, color="#20b2aa")
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text=APP_TITLE, color="#20b2aa")
         page.add(my_header_widget)
 
         def add_new_setting(system_dict : dict, setting_name :str, element_name :str, element_value: str, description_value: str, is_encrypted: bool) -> bool:
@@ -121,7 +122,7 @@ class SettingsPlugin(SystemPluginInterface):
             my_version = "Version  " + my_system_info.get("version", "不明")
             my_build_num = my_system_info.get("build_number", "不明")
             my_version_info = my_version + " (" + my_build_num + ")"
-            app_icon_path = os.path.join(plugin_dir_path, "app_icon.png")
+            app_icon_path = os.path.join(plugin_dir_path, "cf_logo.png")
             with open(app_icon_path, "rb") as app_image_file:
                 encoded_image_string = base64.b64encode(app_image_file.read()).decode("utf-8")
                 my_app_icon = ft.Image(src_base64=encoded_image_string, width=50, height=50,  fit="contain")
@@ -163,25 +164,32 @@ class SettingsPlugin(SystemPluginInterface):
                 ft.Container(
                     ft.Column(
                         [
-                            ft.Column(
-                                [
-                                    tb1,tb2,tb3,tb4,tb5
-                                ],
+                            ft.Container(
+                                content=ft.Column(
+                                    [
+                                        tb1,tb2,tb3,tb4,tb5
+                                    ],
+                                ),
+                                padding=10,
                             ),
-                            ft.Column(
-                                [
-                                    b,
-                                ],
+                            ft.Container(
+                                content=ft.Column(
+                                    [
+                                        b,
+                                    ],
+                                ),
+                                padding=10,
                             ),
                         ],
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        scroll=True,
                     ),
                     padding=10,
                     alignment=ft.alignment.center,
                 ),
                 open=False,
                 on_dismiss=bs_dismissed,
+                elevation=3.0,
             )
             page.overlay.append(bottom_sheet)
             self.bottom_sheet = bottom_sheet
@@ -231,7 +239,7 @@ class SettingsPlugin(SystemPluginInterface):
                         content_container.controls.append(list_tile)
 
                     exp = ft.ExpansionPanel(
-                        bgcolor=ft.colors.BLUE_50,
+                        bgcolor=ft.colors.GREY_100,
                         header=ft.ListTile(title=ft.Text(title)),
                         content=content_container,
                     )
@@ -240,9 +248,8 @@ class SettingsPlugin(SystemPluginInterface):
 
             body_container = ft.Container(
                 content=scrollable_container,
-                padding=ft.padding.only(left=20, right=20),  # 左右に余白を設定
+                padding=ft.padding.only(top=10, left=25, right=25),  # 左右に余白を設定
                 expand=True,  # コンテナをページ全体に広げる
-                border_radius=20,
             )
             page.add(body_container)
 
