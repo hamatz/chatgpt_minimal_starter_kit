@@ -10,7 +10,7 @@ class CartoonTextBox(ft.UserControl):
         self.border_color = kwargs.get("border_color", ft.colors.BLACK)
         self.text_color = kwargs.get("text_color", ft.colors.BLACK)
         self.bgcolor = kwargs.get("bgcolor", ft.colors.WHITE)
-        self.expand = kwargs.get("exoand", True)
+        self.expand = kwargs.get("expand", False)
 
     def build(self):
         self.text_field = ft.TextField(
@@ -36,3 +36,10 @@ class CartoonTextBox(ft.UserControl):
         self.value = e.control.value
         if self.user_on_focus:
             self.user_on_focus(e)
+
+    def set_value(self, value):
+        self.text_field.value = value
+        self.text_field.update()
+
+    def get_value(self):
+        return self.text_field.value

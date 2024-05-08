@@ -54,7 +54,7 @@ class SharedFolderManager(SystemPluginInterface):
         page.add(my_header_widget)
 
         def manage_permissions_dlg(folder_id):
-            folder_info = self.system_api.settings.load_system_dict("SharedFolderManager", folder_id)
+            folder_info = self.system_api.settings.load_system_dict("共有フォルダ管理", folder_id)
             folder_name = folder_info["name"]
             permissions = folder_info["permissions"]
 
@@ -84,7 +84,7 @@ class SharedFolderManager(SystemPluginInterface):
                     subtitle=ft.Text(permission_data["permission"]),
                     trailing=ft.IconButton(
                         icon=ft.icons.DELETE,
-                        on_click=lambda _: revoke_permission(plugin_name),
+                        on_click=lambda _, plugin=plugin_name: revoke_permission(plugin),
                     ),
                 )
                 permissions_view.controls.append(list_tile)
@@ -138,13 +138,13 @@ class SharedFolderManager(SystemPluginInterface):
                     content_container.controls.append(list_tile)
 
                 exp = ft.ExpansionPanel(
-                    bgcolor=ft.colors.BLUE_50,
+                    bgcolor=ft.colors.GREY_100,
                     header=ft.ListTile(
                         title=ft.Text(folder_name),
                         subtitle=ft.Text(f"Owner: {owner_plugin}"),
                         trailing=ft.IconButton(
                             icon=ft.icons.SETTINGS,
-                            on_click=lambda _: manage_permissions_dlg(folder_id),
+                            on_click=lambda _, fid=folder_id: manage_permissions_dlg(fid),
                         ),
                     ),
                     content=ft.Container(
@@ -155,40 +155,45 @@ class SharedFolderManager(SystemPluginInterface):
                 panel.controls.append(exp)
 
             scrollable_container.controls.append(panel)
-            page.add(scrollable_container)
+            body_container = ft.Container(
+                content=scrollable_container,
+                padding=ft.padding.only(top=20, left=50, right=50),  # 左右に余白を設定
+                expand=True,  # コンテナをページ全体に広げる
+            )
+            page.add(body_container)
 
         load_shared_folders()
 
         def create_new_folder_dlg(e):
             def create_folder(e):
-                folder_name = new_folder_name.value
-                owner_plugin = new_folder_owner.value
-                folder_path = folder_picker.value
+                folder_name = new_folder_name.get_value()
+                owner_plugin = new_folder_owner.get_value()
+                folder_path = folder_picker.get_value()
                 if folder_name and owner_plugin and folder_path:
                     self.create_shared_folder(folder_name, owner_plugin, folder_path)
                     bottom_sheet.open = False
                     bottom_sheet.update()
                     page.clean()
-                    load_shared_folders()  # リストを更新
-                    page.update()  # ページを更新
+                    self.load(self.page, self.page_back_func, self.plugin_dir)
 
             new_folder_name = get_component("CartoonTextBox", label="Folder Name")
             new_folder_owner = get_component("CartoonTextBox", label="Owner Plugin")
-            folder_picker = get_component("CartoonTextBox", label="Folder Path", on_focus=lambda _: pick_folder())
+            folder_picker = get_component("CartoonTextBox", label="Folder Path")
 
-            def pick_folder():
-                dialog = ft.FilePicker(on_result=on_folder_selected)
-                page.overlay.append(dialog)
-                page.update()
-                dialog.get_directory_path()
-
-            def on_folder_selected(e: ft.FilePickerResultEvent):
+            def pick_folder(e):
                 if e.path:
-                    folder_picker.value = e.path
-                    page.overlay.pop()
+                    folder_picker.set_value(e.path)
                     page.update()
 
-            create_button = get_component("CartoonButton", text="登録", icon=ft.icons.ADMIN_PANEL_SETTINGS,  on_click=create_folder)
+            def on_folder_picker_focus(e):
+                dialog = ft.FilePicker(on_result=pick_folder)
+                page.overlay.append(dialog)
+                page.update()
+                dialog.get_directory_path(dialog_title="フォルダを選択してください")
+
+            folder_picker.on_focus = on_folder_picker_focus
+
+            create_button = get_component("CartoonButton", text="登録する", icon=ft.icons.ADMIN_PANEL_SETTINGS,  on_click=create_folder)
 
             bottom_sheet = ft.BottomSheet(
                 ft.Container(
@@ -202,7 +207,7 @@ class SharedFolderManager(SystemPluginInterface):
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     ),
-                    padding=10,
+                    padding=20,
                     alignment=ft.alignment.center,
                 ),
                 open=True,
@@ -243,10 +248,10 @@ class SharedFolderManager(SystemPluginInterface):
                 folder_info["permissions"][plugin_name] = {"path": folder_path, "permission": permission}
                 self.system_api.settings.save_system_dict("SharedFolderManager", folder_id, folder_info)
                 # ダイアログを閉じる
-                self.page.dialog.open = False
+                self.page.overlay.remove(dialog)
                 self.page.update()
                 self.page.clean()
-                self.load(self.page, self.page_back_func, self.plugin_dir,self.api)
+                self.load(self.page, self.page_back_func, self.plugin_dir)
 
         # ディレクトリ選択ダイアログを表示
         dialog = ft.FilePicker(on_result=on_directory_selected)
