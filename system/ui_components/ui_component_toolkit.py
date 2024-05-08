@@ -61,7 +61,7 @@ class UIComponentToolkit(SystemPluginInterface):
             on_tap=lambda _: function_to_top_page()
         )
         component_class = self.get_component("SimpleHeader2")
-        my_header_widget = component_class(icon=clickable_icon, title_text="UI Component Catalog", color="#20b2aa")
+        my_header_widget = component_class(icon=clickable_icon, title_text="UIコンポーネントカタログ", color="#20b2aa")
         page.add(my_header_widget)
 
         def create_component_card(component_name, component_class):
@@ -237,4 +237,9 @@ class UIComponentToolkit(SystemPluginInterface):
             component_card = create_component_card(component_name, component_class)
             component_catalog.controls.append(component_card)
 
-        page.add(component_catalog)
+        body_container = ft.Container(
+            content= component_catalog,
+            padding=20,
+            expand=True, 
+        )
+        page.add(body_container)

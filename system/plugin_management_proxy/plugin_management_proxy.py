@@ -48,7 +48,7 @@ class PluginManagementProxy(SystemPluginInterface):
             content=app_icon,
             on_tap=lambda _: go_back_to_home(None)
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="PluginManagementProxy", color="#20b2aa")
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="インストール用設定管理", color="#20b2aa")
         page.add(my_header_widget)
 
         def add_allowed_url(e):
@@ -59,7 +59,7 @@ class PluginManagementProxy(SystemPluginInterface):
                 self.load_allowed_urls()
                 page.update()
 
-        allowed_url_textbox = get_component("CartoonTextBox", label="接続先情報")
+        allowed_url_textbox = get_component("CartoonTextBox", label="接続先情報", expand=True)
         add_button = get_component("CartoonButton", text="追加", on_click=add_allowed_url)
 
         allowed_urls_view = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
