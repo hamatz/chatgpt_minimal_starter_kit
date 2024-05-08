@@ -79,7 +79,7 @@ class PluginManager:
         app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
         clickable_image = ft.GestureDetector(
             content=app_icon,
-            on_tap=lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir)
+            on_tap=lambda _: show_plugin(plugin_instance, plugin_dir, app_container_instance)
         )
         app_title = plugin_info["name"]
         app_version = "Version: " + plugin_info["version"]
@@ -102,6 +102,39 @@ class PluginManager:
             
             self.myapp_container = container
             self.installed_plugins[plugin_name] = plugin_dir
+
+        def show_plugin(instance, plugin_dir, app_container_instance):
+            spinner = ft.ProgressRing(color=ft.colors.BLUE, stroke_width=2, scale=0.4)
+            spinner_overlay = ft.Container(
+                content=spinner,
+                alignment=ft.alignment.center,
+                width=100,
+                height=100,
+                bgcolor=ft.colors.BLACK54,
+                border_radius=ft.border_radius.all(10),
+            )
+            plugin_icon_stack = ft.Stack(
+                [
+                    app_container_instance.image.content,
+                    spinner_overlay,
+                ],
+                width=100,
+                height=100,
+            )
+            app_container_instance.image.content = plugin_icon_stack
+            app_container_instance.image.update()
+            
+            def loaded_callback():
+                app_container_instance.image.content = app_container_instance.image.content.controls[0]
+                app_container_instance.image.update()
+
+            self.page.overlay.append(app_container_instance)
+            self.page.update()
+
+            instance.load(self.page, self.page_back_func, plugin_dir)
+            loaded_callback()
+            self.page.overlay.remove(app_container_instance)
+            self.page.update()
         self.page.update()
 
     def get_icon_base64(self, plugin_dir: str) -> str:
