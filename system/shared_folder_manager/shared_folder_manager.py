@@ -1,5 +1,6 @@
 import base64
 import os
+import time
 import flet as ft
 from interfaces.system_plugin_interface import SystemPluginInterface
 from system_api_layer import SystemAPI
@@ -63,6 +64,7 @@ class SharedFolderManager(SystemPluginInterface):
                 self.grant_permission(folder_id, permission)
                 bottom_sheet.open = False
                 bottom_sheet.update()
+                time.sleep(1)
                 self.page.clean()
                 self.load(self.page, self.page_back_func, self.plugin_dir)
 
@@ -70,6 +72,7 @@ class SharedFolderManager(SystemPluginInterface):
                 self.revoke_permission(folder_id, plugin_name)
                 self.bottom_sheet.open = False
                 self.bottom_sheet.update()
+                time.sleep(1)
                 self.page.clean()
                 self.load(self.page, self.page_back_func, self.plugin_dir)
             #事実上、何を選択してもフォルダパスを知った後は何でもできるので、現状は"write"で固定しておく
