@@ -104,7 +104,7 @@ class PluginManager:
             self.installed_plugins[plugin_name] = plugin_dir
 
         def show_plugin(instance, plugin_dir, app_container_instance):
-            spinner = ft.ProgressRing(color=ft.colors.BLUE, stroke_width=2, scale=0.4)
+            spinner = ft.ProgressRing(color=ft.colors.TEAL_ACCENT_400, stroke_width=8, scale=0.8)
             spinner_overlay = ft.Container(
                 content=spinner,
                 alignment=ft.alignment.center,
