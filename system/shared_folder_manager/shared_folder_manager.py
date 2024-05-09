@@ -50,11 +50,11 @@ class SharedFolderManager(SystemPluginInterface):
             content=app_icon,
             on_tap=lambda _: go_back_to_home(None)
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="Shared Folder Manager", color="#20b2aa")
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="共有フォルダ管理", color="#20b2aa")
         page.add(my_header_widget)
 
         def manage_permissions_dlg(folder_id):
-            folder_info = self.system_api.settings.load_system_dict("共有フォルダ管理", folder_id)
+            folder_info = self.system_api.settings.load_system_dict("SharedFolderManager", folder_id)
             folder_name = folder_info["name"]
             permissions = folder_info["permissions"]
 
@@ -63,15 +63,15 @@ class SharedFolderManager(SystemPluginInterface):
                 self.grant_permission(folder_id, permission)
                 bottom_sheet.open = False
                 bottom_sheet.update()
-                load_shared_folders()  # リストを更新
-                page.update()  # ページを更新
+                self.page.clean()
+                self.load(self.page, self.page_back_func, self.plugin_dir)
 
             def revoke_permission(plugin_name):
                 self.revoke_permission(folder_id, plugin_name)
                 self.bottom_sheet.open = False
                 self.bottom_sheet.update()
-                self.page.update()
-                self.load(self.page, self.page_back_func, self.plugin_dir, self.api)
+                self.page.clean()
+                self.load(self.page, self.page_back_func, self.plugin_dir)
             #事実上、何を選択してもフォルダパスを知った後は何でもできるので、現状は"write"で固定しておく
             options = ["write"]
             permission_dropdown = get_component("CartoonDropdown", options=options, value="write", on_change=None)
@@ -114,53 +114,76 @@ class SharedFolderManager(SystemPluginInterface):
         def load_shared_folders():
             shared_folders = self.system_api.settings.get_system_dicts_all().get("SharedFolderManager", {})
 
-            scrollable_container = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO)
+            if not shared_folders:
+                # 登録されているフォルダがない場合
+                image_path = os.path.join(self.plugin_dir, "no_folders.png")
+                try:
+                    with open(image_path, "rb") as cover_image_file:
+                        cover_encoded_string = base64.b64encode(cover_image_file.read()).decode("utf-8")
+                    app_cover = ft.Image(src_base64=cover_encoded_string, width=300, height=300)
+                except FileNotFoundError:
+                    app_cover = ft.Text("画像が見つかりません", color=ft.colors.RED)
 
-            panel = ft.ExpansionPanelList(
-                expand_icon_color=ft.colors.BLUE_GREY,
-                elevation=8,
-                divider_color=ft.colors.BLUE_GREY,
-                controls=[],
-            )
-
-            for folder_id, folder_info in shared_folders.items():
-                folder_name = folder_info["name"]
-                owner_plugin = folder_info["owner"]
-                permissions = folder_info["permissions"]
-
-                content_container = ft.Column([])
-
-                for plugin_name, permission_data in permissions.items():
-                    list_tile = ft.ListTile(
-                        title=ft.Text(plugin_name),
-                        subtitle=ft.Text(permission_data["permission"]),
-                    )
-                    content_container.controls.append(list_tile)
-
-                exp = ft.ExpansionPanel(
-                    bgcolor=ft.colors.GREY_100,
-                    header=ft.ListTile(
-                        title=ft.Text(folder_name),
-                        subtitle=ft.Text(f"Owner: {owner_plugin}"),
-                        trailing=ft.IconButton(
-                            icon=ft.icons.SETTINGS,
-                            on_click=lambda _, fid=folder_id: manage_permissions_dlg(fid),
-                        ),
-                    ),
-                    content=ft.Container(
-                        content=content_container,
-                        padding=10,
-                    ),
+                message = ft.Text("共有したいフォルダを登録してください", size=20, color=ft.colors.BLUE_GREY_400)
+                content = ft.Column(
+                    [
+                        app_cover,
+                        message
+                    ],
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    expand=True
                 )
-                panel.controls.append(exp)
+            else:
+                panel = ft.ExpansionPanelList(
+                    expand_icon_color=ft.colors.BLUE_GREY,
+                    elevation=8,
+                    divider_color=ft.colors.BLUE_GREY,
+                    controls=[],
+                )
 
-            scrollable_container.controls.append(panel)
+                for folder_id, folder_info in shared_folders.items():
+                    folder_name = folder_info["name"]
+                    owner_plugin = folder_info["owner"]
+                    permissions = folder_info["permissions"]
+
+                    content_container = ft.Column([])
+
+                    for plugin_name, permission_data in permissions.items():
+                        list_tile = ft.ListTile(
+                            title=ft.Text(plugin_name),
+                            subtitle=ft.Text(permission_data["permission"]),
+                        )
+                        content_container.controls.append(list_tile)
+
+                    exp = ft.ExpansionPanel(
+                        bgcolor=ft.colors.GREY_100,
+                        header=ft.ListTile(
+                            title=ft.Text(folder_name),
+                            subtitle=ft.Text(f"Owner: {owner_plugin}"),
+                            trailing=ft.IconButton(
+                                icon=ft.icons.SETTINGS,
+                                on_click=lambda _, fid=folder_id: manage_permissions_dlg(fid),
+                            ),
+                        ),
+                        content=ft.Container(
+                            content=content_container,
+                            padding=10,
+                        ),
+                    )
+                    panel.controls.append(exp)
+
+                content = panel
+
             body_container = ft.Container(
-                content=scrollable_container,
-                padding=ft.padding.only(top=20, left=50, right=50),  # 左右に余白を設定
-                expand=True,  # コンテナをページ全体に広げる
+                content=content,
+                padding=ft.padding.only(top=20, left=50, right=50),
+                alignment=ft.alignment.top_center,
+                expand=True,
             )
+
             page.add(body_container)
+            page.update()
 
         load_shared_folders()
 
@@ -248,15 +271,15 @@ class SharedFolderManager(SystemPluginInterface):
                 folder_info["permissions"][plugin_name] = {"path": folder_path, "permission": permission}
                 self.system_api.settings.save_system_dict("SharedFolderManager", folder_id, folder_info)
                 # ダイアログを閉じる
-                self.page.overlay.remove(dialog)
+                if dialog in self.page.overlay:
+                    self.page.overlay.remove(dialog)
                 self.page.update()
                 self.page.clean()
                 self.load(self.page, self.page_back_func, self.plugin_dir)
 
         # ディレクトリ選択ダイアログを表示
         dialog = ft.FilePicker(on_result=on_directory_selected)
-        self.page.dialog = dialog
-        self.page.dialog.open = True
+        self.page.overlay.append(dialog)
         self.page.update()
         dialog.get_directory_path()
 
