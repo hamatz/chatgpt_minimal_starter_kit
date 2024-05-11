@@ -123,16 +123,12 @@ class PluginManager:
             )
             app_container_instance.image.content = plugin_icon_stack
             app_container_instance.image.update()
-            
-            def loaded_callback():
-                app_container_instance.image.content = app_container_instance.image.content.controls[0]
-                app_container_instance.image.update()
 
             self.page.overlay.append(app_container_instance)
             self.page.update()
 
             instance.load(self.page, self.page_back_func, plugin_dir)
-            loaded_callback()
+            
             self.page.overlay.remove(app_container_instance)
             self.page.update()
         self.page.update()
