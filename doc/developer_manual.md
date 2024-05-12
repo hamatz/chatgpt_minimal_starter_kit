@@ -158,7 +158,7 @@ def _load_plugin(self, plugin_dir: str, container: ft.Container):
 以下は、プラグインの`load`メソッドの例です。
 
 ```python
-    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, loaded_callback):
 
         # UIComponentToolkit からUIコンポーネントを取得する
         def get_component(component_name, **kwargs):
@@ -178,6 +178,7 @@ def _load_plugin(self, plugin_dir: str, container: ft.Container):
         #ホーム画面に戻るボタンの作成
         back_button = ft.ElevatedButton("Back to Main Page", on_click=lambda _: function_to_top_page())
 
+        loaded_callback()
         page.clean() #描画前のクリーンアップ
         page.add(my_header_widget)
         page.add(greeting_text, back_button)
