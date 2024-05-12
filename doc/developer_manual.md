@@ -1,5 +1,9 @@
 # CraftForge プラグイン開発マニュアル
 
+<div>
+    <img src="img/dev_01.jpg" alt="Home" width="300">
+</div>
+
 ## 1. はじめに
 
 ### 1.1 CraftForgeの概要
@@ -21,11 +25,12 @@ class SamplePlugin(PluginInterface):
 
     _instance = None
     
-    def __new__(cls, intent_conducto):
+    def __new__(cls, intent_conductor, api):
         if cls._instance is None:
             cls._instance = super(SamplePlugin, cls).__new__(cls)
             # 新しいインスタンスの初期化
-            cls._instance.intent_conducto = intent_conducto
+            cls._instance.intent_conductor = intent_conductor
+            cls._instance.api = api
         return cls._instance
 ```
 
@@ -105,8 +110,9 @@ CraftForgeでは、プラグインのライフサイクルを管理するため�
 
 4. プラグインの実行
    - ユーザーがプラグインのアイコンをクリックすると、`PluginManager`はプラグインの`load`メソッドを呼び出します。
-   - `load`メソッドには、`page`（Fletの`Page`オブジェクト）、`function_to_top_page`（ホーム画面に戻るための関数）、`my_app_path`（プラグインのディレクトリパス）、`api`（CraftForgeのAPIオブジェクト）が渡されます。
+   - `load`メソッドには、`page`（Fletの`Page`オブジェクト）、`function_to_top_page`（ホーム画面に戻るための関数）、`my_app_path`（プラグインのディレクトリパス）が渡されます。
    - プラグインは、`load`メソッド内で必要なUIコンポーネントを作成し、一度画面をクリアした後でページに自分自身を表示します。
+   - プラグインの読み込み中は、ホーム画面のアイコン上にスピナーが表示され、読み込みが完了するとプラグインの画面へと遷移します。プラグイン自身が画面をクリアする前提となっているため、ホーム画面上のスピナーについては描画処理を中断する処理は特に必要ありません。
 
 5. プラグインの終了
    - ユーザーがプラグインを終了すると、`function_to_top_page`関数が呼び出され、CraftForgeのホーム画面に戻ります。
@@ -117,14 +123,20 @@ CraftForgeでは、プラグインのライフサイクルを管理するため�
 ```python
 def _load_plugin(self, plugin_dir: str, container: ft.Container):
     # ...
+    app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
     clickable_image = ft.GestureDetector(
         content=app_icon,
-        on_tap=lambda _, instance=plugin_instance, extract_dir=plugin_dir: instance.load(self.page, self.page_back_func, extract_dir, self.api)
+        on_tap=lambda _: show_plugin(plugin_instance, plugin_dir, app_container_instance)
     )
+    # ...
+    def show_plugin(instance, plugin_dir, app_container_instance):
+            # ...
+            instance.load(self.page, self.page_back_func, plugin_dir)
+            # ...
     # ...
 ```
 
-上記のコードでは、プラグインのアイコン画像に`GestureDetector`が割り当てられ、`on_tap`イベントに`plugin_instance.load`メソッドが登録されています。これにより、ユーザーがプラグインのアイコンをクリックすると、対応するプラグインの`load`メソッドが呼び出されることにより起動する仕組みとなっています。
+上記のコードでは、プラグインのアイコン画像に`GestureDetector`が割り当てられ、`on_tap`イベントから呼び出される`show_plugin`メソッドに`instance.load`する処理が登録されています。これにより、ユーザーがプラグインのアイコンをクリックすると、対応するプラグインの`load`メソッドが呼び出されることにより起動する仕組みとなっています。
 
 ### 4.2 プラグインの開発手順
 プラグインを開発する際は、以下の手順に従ってください。
@@ -138,14 +150,14 @@ def _load_plugin(self, plugin_dir: str, container: ft.Container):
    - `page`オブジェクトを使用してUIコンポーネントを作成し、ページに追加します。
    - `function_to_top_page`関数を使用して、ホーム画面に戻るボタンやアクションを実装します。
    - `my_app_path`を使用して、プラグインのリソースファイルのパスを取得します。
-   - `api`オブジェクトを使用して、CraftForgeの機能を呼び出します。
+   - 必要に応じ`api`オブジェクトや`IntentConductor`を使用して、CraftForgeの機能を呼び出します。
 7. プラグインをテストし、正常に動作することを確認します。
 8. プラグインをZIPファイルにパッケージ化します。
 
 以下は、プラグインの`load`メソッドの例です。
 
 ```python
-    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
 
         # UIComponentToolkit からUIコンポーネントを取得する
         def get_component(component_name, **kwargs):
@@ -187,16 +199,16 @@ CraftForgeでは、プラグイン開発者がセンシティブな情報を直�
 
 ```python
 class SampleChat(PluginInterface):
-    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, api):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
         # ...
 
         def set_gpt_client() -> None:
             if self.my_service == "OpenAI":
-                self.chat_client = api.get_chat_gpt_instance()
-                self.my_gpt_model = api.get_openai_gpt_model_name()
+                self.chat_client = self.api.get_chat_gpt_instance()
+                self.my_gpt_model = self.api.get_openai_gpt_model_name()
             elif self.my_service == "Azure":
-                self.chat_client = api.get_azure_gpt_instance()
-                self.my_azure_deployment_name = api.get_my_azure_deployment_name()
+                self.chat_client = self.api.get_azure_gpt_instance()
+                self.my_azure_deployment_name = self.api.get_my_azure_deployment_name()
 
         # ...
 ```
@@ -299,6 +311,11 @@ class IntentConductor:
 ```
 
 #### シーケンス図の説明:
+
+
+<div>
+    <img src="img/dev_02.jpg" alt="Home" width="300">
+</div>
 
 1. UIComponentToolkitは、起動時にIntentConductorの`register_plugin`メソッドを呼び出し、自身を"UIComponentToolkit"という名前でIntentConductorに登録します。
 
