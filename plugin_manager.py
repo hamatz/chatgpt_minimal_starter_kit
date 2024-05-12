@@ -127,10 +127,14 @@ class PluginManager:
             self.page.overlay.append(app_container_instance)
             self.page.update()
 
-            instance.load(self.page, self.page_back_func, plugin_dir)
+            def loaded_callback():
+                self.page.overlay.remove(app_container_instance)
+                self.page.update()
+
+            instance.load(self.page, self.page_back_func, plugin_dir, loaded_callback)
             
-            self.page.overlay.remove(app_container_instance)
-            self.page.update()
+            # self.page.overlay.remove(app_container_instance)
+            # self.page.update()
         self.page.update()
 
     def get_icon_base64(self, plugin_dir: str) -> str:

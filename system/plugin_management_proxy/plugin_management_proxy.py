@@ -19,11 +19,12 @@ class PluginManagementProxy(SystemPluginInterface):
             cls._instance.intent_conductor.register_plugin("PluginManagementProxy", cls._instance)
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str):
+    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str, loaded_callback):
         self.page = page
         self.page_back_func = function_to_top_page
         self.plugin_dir = plugin_dir_path
 
+        loaded_callback()
         page.clean()
 
         def go_back_to_home(e):

@@ -49,8 +49,9 @@ class UIComponentToolkit(SystemPluginInterface):
     def send_event(self, event_name, data, target_plugin=None):
         self.intent_conductor.send_event(event_name, data, target_plugin)
 
-    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str):
-        page.clean()
+    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str, loaded_callback):
+        # loaded_callback()
+        # page.clean()
 
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
         with open(icon_path, "rb") as image_file:
@@ -62,7 +63,7 @@ class UIComponentToolkit(SystemPluginInterface):
         )
         component_class = self.get_component("SimpleHeader2")
         my_header_widget = component_class(icon=clickable_icon, title_text="UIコンポーネントカタログ", color="#20b2aa")
-        page.add(my_header_widget)
+        #page.add(my_header_widget)
 
         def create_component_card(component_name, component_class):
             if component_name == "SimpleHeader":
@@ -242,4 +243,7 @@ class UIComponentToolkit(SystemPluginInterface):
             padding=20,
             expand=True, 
         )
+        loaded_callback()
+        page.clean()
+        page.add(my_header_widget)
         page.add(body_container)

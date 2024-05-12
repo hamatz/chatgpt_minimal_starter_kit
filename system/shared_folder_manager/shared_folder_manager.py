@@ -18,8 +18,7 @@ class SharedFolderManager(SystemPluginInterface):
             cls._instance.api=api
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str):
-        page.clean()
+    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str, loaded_callback):
 
         self.page = page
         self.page_back_func = function_to_top_page
@@ -52,6 +51,8 @@ class SharedFolderManager(SystemPluginInterface):
             on_tap=lambda _: go_back_to_home(None)
         )
         my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="共有フォルダ管理", color="#20b2aa")
+        loaded_callback()
+        page.clean()
         page.add(my_header_widget)
 
         def manage_permissions_dlg(folder_id):

@@ -15,7 +15,7 @@ class SampleChat(PluginInterface):
             cls._instance.api = api
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, loaded_callback):
 
         def get_answer(prompt, my_gpt_model):
             message=[{ "role": "user","content":prompt}]
@@ -37,8 +37,7 @@ class SampleChat(PluginInterface):
                 return component_class(**kwargs)
             else:
                 self.api.logger.error(f"component cannot be found: {component_name}")
-        
-        page.clean()
+
         self.my_service = "OpenAI"
 
         def service_selected(e):
@@ -54,13 +53,10 @@ class SampleChat(PluginInterface):
             content=app_icon,
             on_tap= lambda _: reset_page_setting_and_close()
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text= "Sample Chat v.0.2.0", color="#20b2aa")
-        
-        page.add(my_header_widget)
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text= "Sample Chat v.0.2.1", color="#20b2aa")
 
         dropdown = get_component("CartoonDropdown", options=["OpenAI", "Azure"], value=self.my_service, on_change=service_selected, bg_color=ft.colors.YELLOW_300, txt_color=ft.colors.BLACK)
         button_container = ft.Row(spacing=5, controls=[dropdown], alignment=ft.MainAxisAlignment.END)
-        page.add(button_container)
 
         def set_gpt_client() -> None:
             if self.my_service == "OpenAI":
@@ -140,6 +136,10 @@ class SampleChat(PluginInterface):
         )
 
         # Add everything to the page
+        loaded_callback()
+        page.clean()
+        page.add(my_header_widget)
+        page.add(button_container)
         page.add(
             ft.Container(
                 content=chat,

@@ -12,7 +12,7 @@ class SamplePlugin(PluginInterface):
             cls._instance.api = api
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, loaded_callback):
 
         def get_component(component_name, **kwargs):
             self.api.logger.info(f"Requesting component: {component_name}")
@@ -25,11 +25,12 @@ class SamplePlugin(PluginInterface):
             else:
                 self.api.logger.error(f"component cannot be found: {component_name}")
 
-        my_header_widget = get_component("SimpleHeader", icon=ft.icons.TABLE_RESTAURANT, title_text="Sample Plugin v.0.1.0", color="#20b2aa")
+        my_header_widget = get_component("SimpleHeader", icon=ft.icons.TABLE_RESTAURANT, title_text="Sample Plugin v.0.1.1", color="#20b2aa")
 
         greeting_text = ft.Text("はじめてのプラグインです", size=20)
         back_button = ft.ElevatedButton("Back to Main Page", on_click=lambda _: function_to_top_page())
 
+        loaded_callback()
         page.clean()
         page.add(my_header_widget)
         page.add(greeting_text, back_button)

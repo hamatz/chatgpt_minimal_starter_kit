@@ -275,7 +275,7 @@ class SamplePlugin2(PluginInterface):
             cls._instance.intent_conductor.register_plugin("SamplePlugin2", cls._instance)
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, my_app_path: str):
+    def load(self, page: ft.Page, function_to_top_page, my_app_path: str, loaded_callback):
         def get_component(component_name, **kwargs):
             self.api.logger.info(f"Requesting component: {component_name}")
             target_component = {"component_name": component_name}
@@ -295,8 +295,9 @@ class SamplePlugin2(PluginInterface):
             content=app_icon,
             on_tap=lambda _: function_to_top_page()
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="シンプル計算機 v.0.1.0", color="#20b2aa")
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="シンプル計算機 v.0.1.1", color="#20b2aa")
 
+        loaded_callback()
         page.clean()
         page.add(my_header_widget)
         calc = CalculatorApp()

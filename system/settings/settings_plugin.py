@@ -21,10 +21,11 @@ class SettingsPlugin(SystemPluginInterface):
             cls._instance.api = api
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page : Callable[[],None], plugin_dir_path: str):
+    def load(self, page: ft.Page, function_to_top_page : Callable[[],None], plugin_dir_path: str, loaded_callback):
         MY_SYSTEM_NAME = "CraftForgeBase"
         MY_APP_NAME = "System_Settings"
         APP_TITLE = "システム設定"
+        loaded_callback()
         page.clean()
 
         def toggle_debug_mode(e):

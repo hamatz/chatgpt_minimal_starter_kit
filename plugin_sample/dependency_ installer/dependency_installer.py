@@ -15,12 +15,10 @@ class DependencyInstaller(PluginInterface):
             cls._instance.api = api
         return cls._instance
 
-    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str):
+    def load(self, page: ft.Page, function_to_top_page, plugin_dir_path: str, loaded_callback):
         self.page = page
         self.page_back_func = function_to_top_page
         self.plugin_dir = plugin_dir_path
-
-        page.clean()
 
         def go_back_to_home(e):
             self.page_back_func()
@@ -44,9 +42,11 @@ class DependencyInstaller(PluginInterface):
             content=app_icon,
             on_tap=lambda _: go_back_to_home(None)
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="DependencyInstaller v.0.1.0", color="#20b2aa")
-        page.add(my_header_widget)
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="DependencyInstaller v.0.1.1", color="#20b2aa")
 
+        loaded_callback()
+        page.clean()
+        page.add(my_header_widget)
         def install_dependencies(e):
             dependencies = [
                 {"name": "plugin1", "url": "https://example.com/plugins/plugin1.zip"},

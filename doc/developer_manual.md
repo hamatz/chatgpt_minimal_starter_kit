@@ -112,7 +112,7 @@ CraftForgeでは、プラグインのライフサイクルを管理するため�
    - ユーザーがプラグインのアイコンをクリックすると、`PluginManager`はプラグインの`load`メソッドを呼び出します。
    - `load`メソッドには、`page`（Fletの`Page`オブジェクト）、`function_to_top_page`（ホーム画面に戻るための関数）、`my_app_path`（プラグインのディレクトリパス）が渡されます。
    - プラグインは、`load`メソッド内で必要なUIコンポーネントを作成し、一度画面をクリアした後でページに自分自身を表示します。
-   - プラグインの読み込み中は、ホーム画面のアイコン上にスピナーが表示され、読み込みが完了するとプラグインの画面へと遷移します。プラグイン自身が画面をクリアする前提となっているため、ホーム画面上のスピナーについては描画処理を中断する処理は特に必要ありません。
+   - プラグインの読み込み中は、ホーム画面のアイコン上にスピナーが表示され、読み込みが完了するとプラグインの画面へと遷移します。必要なモジュールの読み込み等が完了し、描画の実行に問題がなくなったタイミングで `loaded_callback`を呼び出すことでスピナーの表示が停止されます（実行までの待ち時間が殆どないプラグインでは、呼び出しタイミングは特に気にする必要はありません）。
 
 5. プラグインの終了
    - ユーザーがプラグインを終了すると、`function_to_top_page`関数が呼び出され、CraftForgeのホーム画面に戻ります。
@@ -131,7 +131,7 @@ def _load_plugin(self, plugin_dir: str, container: ft.Container):
     # ...
     def show_plugin(instance, plugin_dir, app_container_instance):
             # ...
-            instance.load(self.page, self.page_back_func, plugin_dir)
+            instance.load(self.page, self.page_back_func, plugin_dir, loaded_callback)
             # ...
     # ...
 ```
@@ -147,8 +147,9 @@ def _load_plugin(self, plugin_dir: str, container: ft.Container):
 4. プラグインのメインモジュールを作成し、`PluginInterface`を実装します。
 5. `__init__`メソッドでIntentConductorを受け取り、必要な初期化処理を行います。
 6. `load`メソッドを実装し、プラグインのUIを構築します。
-   - `page`オブジェクトを使用してUIコンポーネントを作成し、ページに追加します。
+   - `page`オブジェクトを使用してUIコンポーネントを作成します。
    - `function_to_top_page`関数を使用して、ホーム画面に戻るボタンやアクションを実装します。
+   - `loaded_callback`を呼び出した後、画面をクリアしUIパーツをPage上に配置します。
    - `my_app_path`を使用して、プラグインのリソースファイルのパスを取得します。
    - 必要に応じ`api`オブジェクトや`IntentConductor`を使用して、CraftForgeの機能を呼び出します。
 7. プラグインをテストし、正常に動作することを確認します。
