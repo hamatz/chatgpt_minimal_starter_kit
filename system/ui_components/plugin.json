@@ -1,6 +1,6 @@
 {
     "name": "UIコンポーネント管理",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "UIコンポーネントカタログ兼UIコンポーネントライブラリ",
     "main_module": "ui_component_toolkit",
     "plugin_name": "UIComponentToolkit",

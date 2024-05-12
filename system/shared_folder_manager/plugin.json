@@ -1,6 +1,6 @@
 {
     "name": "共有フォルダ管理",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "複数のプラグインが共有できるフォルダへのアクセス権限を設定できます",
     "main_module": "shared_folder_manager",
     "plugin_name": "SharedFolderManager",

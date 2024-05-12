@@ -1,6 +1,6 @@
 {
     "name": "システム設定",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "システム横断的に利用される情報を設定できます",
     "main_module": "settings_plugin",
     "plugin_name": "SettingsPlugin",

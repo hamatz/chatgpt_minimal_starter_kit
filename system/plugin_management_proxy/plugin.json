@@ -1,6 +1,6 @@
 {
     "name": "インストール用設定管理",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "PluginManagerと中継してリモートにあるプラグインをインストールします",
     "main_module": "plugin_management_proxy",
     "plugin_name": "PluginManagementProxy",
