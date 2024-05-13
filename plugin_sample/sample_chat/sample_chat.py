@@ -13,6 +13,7 @@ class SampleChat(PluginInterface):
             cls._instance = super(SampleChat, cls).__new__(cls)
             cls._instance.intent_conductor = intent_conductor
             cls._instance.api = api
+            cls._instance.intent_conductor.register_plugin("SampleChat", cls._instance)
         return cls._instance
 
     def load(self, page: ft.Page, function_to_top_page, my_app_path: str, loaded_callback):
@@ -53,7 +54,7 @@ class SampleChat(PluginInterface):
             content=app_icon,
             on_tap= lambda _: reset_page_setting_and_close()
         )
-        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text= "Sample Chat v.0.2.1", color="#20b2aa")
+        my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text= "Sample Chat v.0.2.2", color="#20b2aa")
 
         dropdown = get_component("CartoonDropdown", options=["OpenAI", "Azure"], value=self.my_service, on_change=service_selected, bg_color=ft.colors.YELLOW_300, txt_color=ft.colors.BLACK)
         button_container = ft.Row(spacing=5, controls=[dropdown], alignment=ft.MainAxisAlignment.END)
@@ -155,3 +156,32 @@ class SampleChat(PluginInterface):
             ),
         )
         page.update()
+
+    def handle_event(self, event_name, data, sender_plugin):
+        if event_name == "chat_request":
+            prompt = data["prompt"]
+            api_type = data["api_type"]
+            return self.get_chat_response(prompt, api_type)
+
+    def get_chat_response(self, prompt, api_type):
+        if api_type == "OpenAI":
+            self.chat_client = self.api.ai.get_chat_gpt_instance()
+            self.my_gpt_model = self.api.ai.get_openai_gpt_model_name()
+        elif api_type == "Azure":
+            self.chat_client = self.api.ai.get_azure_gpt_instance()
+            self.my_azure_deployment_name = self.api.ai.get_my_azure_deployment_name()
+
+        message = [{"role": "user", "content": prompt}]
+        model_name = self.my_gpt_model if api_type == "OpenAI" else self.my_azure_deployment_name
+        response = self.chat_client.chat.completions.create(
+            model=model_name,
+            messages=message,
+            stream=True
+        )
+
+        reply_text = ""
+        for chunk in response:
+            chunk_message = chunk.choices[0].delta.content
+            if chunk_message is not None:
+                reply_text += chunk_message
+        return reply_text
