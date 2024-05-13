@@ -1,0 +1,8 @@
+{
+    "name": "エーアイKaigi",
+    "version": "0.1.0",
+    "description": "複数のプロンプトを使ってAI同士に議論をしてもらうプラグインです",
+    "main_module": "ai_kaigi",
+    "plugin_name": "AIKaigiPlugin",
+    "icon": "icon.jpg"
+}
