@@ -39,7 +39,7 @@ class AIKaigiPlugin(PluginInterface):
             prompt_templates = []
             for i in range(1, 4):
                 template_file = os.path.join(template_dir, f"template{i}.md")
-                with open(template_file, "r") as f:
+                with open(template_file, "r", encoding='utf-8') as f:
                     prompt_templates.append(f.read())
 
             def send_chat_request(prompt):
