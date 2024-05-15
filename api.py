@@ -1,13 +1,21 @@
 import hashlib
 import os
 import logging
+import time
 from openai import AzureOpenAI, OpenAI
+import openai
 from langchain_community.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from langchain_community.embeddings import AzureOpenAIEmbeddings
 from langchain_community.chat_models.azure_openai import AzureChatOpenAI
 from PyPDF2 import PdfReader
+import sounddevice as sd
+import numpy as np
+import wave
+from pydub import AudioSegment
+from pydub.playback import play
+import io
 
 class API:
 
@@ -311,3 +319,94 @@ class API:
                     if permission in ["read", "write", "execute"]:
                         return folder_path
             raise PermissionError("Access denied.")
+    
+    class MultimediaUtils:
+        def __init__(self, system_api):
+            self.__system_api = system_api
+            openai_token_dict = self.__system_api.settings.load_system_dict("System_Settings", "OpenAI_Token")
+            my_openai_encrypted_token =openai_token_dict.get("api_key").get("value")
+            my_openai_token = self.__system_api.crypto.decrypt_system_data(my_openai_encrypted_token)
+            self.__openai = openai
+            self.__openai.api_key=my_openai_token
+            self.THRESHOLD = int(self.__system_api.settings.load_system_dict("MultimediaSettings", "THRESHOLD", {"value": 500})["value"])
+            self.SILENCE_DURATION = int(self.__system_api.settings.load_system_dict("MultimediaSettings", "SILENCE_DURATION", {"value": 2})["value"])
+
+        def set_plugin_permission(self, plugin_name, permission_type, allowed):
+            """
+            プラグインのカメラまたはマイクの使用許可を設定します。
+
+            Args:
+                plugin_name (str): プラグイン名。
+                permission_type (str): 許可の種類。"camera"または"microphone"。
+                allowed (bool): 許可する場合はTrue、拒否する場合はFalse。
+            """
+            permissions = self.system_api.settings.load_system_dict("PluginPermissions", plugin_name)
+            if permissions is None:
+                permissions = {}
+            permissions[permission_type] = allowed
+            self.system_api.settings.save_system_dict("PluginPermissions", plugin_name, permissions)
+
+        def __check_permission(self, permission_type, caller_plugin):
+            plugin_permissions = self.__system_api.settings.load_system_dict("PluginPermissions",caller_plugin)
+            return plugin_permissions.get(f"{permission_type}_allowed", False)
+
+        def record_audio(self, fs=16000, caller_plugin=None):
+            if not self.__check_permission("microphone", caller_plugin):
+                raise PermissionError("Microphone access denied for this plugin.")
+            self.logger.info("Recording...")
+            audio_data = []
+            start_time = time.time()
+
+            def callback(indata, frames, time, status):
+                audio_data.extend(indata)
+                # Check if the sound level is below the threshold
+                if np.abs(indata).max() < self.THRESHOLD:
+                    nonlocal start_time
+                    if time.time() - start_time > self.SILENCE_DURATION:
+                        raise sd.CallbackStop()
+                else:
+                    start_time = time.time()
+
+            with sd.InputStream(callback=callback, channels=1, samplerate=fs, dtype=np.int16):
+                try:
+                    sd.sleep(10000)  # Max recording time (10 seconds here)
+                except sd.CallbackStop:
+                    pass
+
+            self.logger.info("Recording finished.")
+            audio = np.array(audio_data, dtype=np.int16)
+            return audio
+
+        def save_audio(self, filename, audio, fs=16000):
+            with wave.open(filename, 'w') as f:
+                f.setnchannels(1)
+                f.setsampwidth(2)
+                f.setframerate(fs)
+                f.writeframes(audio.tobytes())
+
+        def transcribe_audio(self, file_path):
+            with open(file_path, 'rb') as audio_file:
+                transcript = self.__openai.Audio.transcribe(audio_file)
+            return transcript['text']
+
+        def get_text_response(self, prompt):
+            response = self.__openai.Completion.create(
+                engine="gpt-4o",
+                prompt=prompt,
+                max_tokens=150
+            )
+            return response.choices[0].text.strip()
+
+        def text_to_speech(self, text, voice):
+            response = self.__openai.TextToSpeech.create(
+                text=text,
+                voice=voice
+                #voice="en_us_male"
+            )
+            audio_content = response['audio_content']
+            return AudioSegment.from_file(io.BytesIO(audio_content), format="mp3")
+
+        def play_audio(self, audio_segment, caller_plugin=None):
+            if not self.__check_permission("audio", caller_plugin):
+                raise PermissionError("Audio playback denied for this plugin.")
+            play(audio_segment)

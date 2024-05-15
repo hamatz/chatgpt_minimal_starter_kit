@@ -59,6 +59,17 @@ class PluginManager:
         except UnicodeDecodeError as e:
             self.api.logger.error(f"Error decoding plugin.json: {e}")
             return  # エラー時は処理を中断
+        
+        use_camera = plugin_info.get("use_camera", False)
+        use_microphone = plugin_info.get("use_microphone", False)
+        
+        self.system_api.settings.save_system_dict("PluginPermissions", plugin_name, {
+            "use_camera": use_camera,
+            "use_microphone": use_microphone,
+            "camera_allowed": False,
+            "microphone_allowed": False,
+        })
+
         sys.path.append(plugin_dir)
         plugin_module = importlib.import_module(plugin_info["main_module"])
         plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
