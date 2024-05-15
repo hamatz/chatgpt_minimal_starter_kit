@@ -213,6 +213,19 @@ class UIComponentToolkit(SystemPluginInterface):
                     padding=10,
                     border_radius=10,
                 ) 
+            elif component_name == "TalkingCrystal":
+                return ft.Container(
+                    content=ft.Column([
+                        ft.Text(component_name, size=18, weight="bold"),
+                        component_class(
+                            "Record", ft.colors.RED_400, ft.colors.BLUE_400, 
+                        ),
+                    ]),
+                    alignment=ft.alignment.center,
+                    bgcolor="#ffffff",
+                    padding=10,
+                    border_radius=10,
+                ) 
             else: 
                 return ft.Container(
                     content=ft.Column([
