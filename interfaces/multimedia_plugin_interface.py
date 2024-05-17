@@ -8,16 +8,16 @@ class MultimediaPluginInterface(PluginInterface):
         return self.api.multimedia.record_audio(fs=fs, caller_plugin=self.__class__.__name__)
 
     def play_audio(self, audio_segment):
-        self.api.multimedia.play_audio(audio_segment, caller_plugin=self.__class__.__name__)
+        self.api.multimedia.play_audio(audio_segment)
 
     def save_audio(self, filename, audio, fs=16000):
-        self.api.multimedia.save_audio(filename, audio, fs=fs, caller_plugin=self.__class__.__name__)
+        self.api.multimedia.save_audio(filename, audio, fs=fs)
 
     def transcribe_audio(self, file_path):
-        return self.api.multimedia.transcribe_audio(file_path, caller_plugin=self.__class__.__name__)
+        return self.api.multimedia.transcribe_audio(file_path)
 
     def get_text_response(self, prompt):
-        return self.api.multimedia.get_text_response(prompt, caller_plugin=self.__class__.__name__)
+        return self.api.multimedia.get_text_response(prompt)
 
     def text_to_speech(self, text):
-        return self.api.multimedia.text_to_speech(text, caller_plugin=self.__class__.__name__)
+        return self.api.multimedia.text_to_speech(text)

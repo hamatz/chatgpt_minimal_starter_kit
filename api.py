@@ -16,6 +16,7 @@ import wave
 from pydub import AudioSegment
 from pydub.playback import play
 import io
+from pathlib import Path
 
 class API:
 
@@ -25,6 +26,7 @@ class API:
         self.content_key = self.ContentKeyManager(system_api)
         self.ai = self.AIUtils(system_api)
         self.files = self.FileUtils(system_api)
+        self.multimedia = self.MultimediaUtils(system_api)
 
     def is_debug_mode(self) -> bool:
         """
@@ -323,28 +325,33 @@ class API:
     class MultimediaUtils:
         def __init__(self, system_api):
             self.__system_api = system_api
+        
+        def pre_process(self, threshold=500, silence_duration=2):
             openai_token_dict = self.__system_api.settings.load_system_dict("System_Settings", "OpenAI_Token")
             my_openai_encrypted_token =openai_token_dict.get("api_key").get("value")
             my_openai_token = self.__system_api.crypto.decrypt_system_data(my_openai_encrypted_token)
             self.__openai = openai
             self.__openai.api_key=my_openai_token
-            self.THRESHOLD = int(self.__system_api.settings.load_system_dict("MultimediaSettings", "THRESHOLD", {"value": 500})["value"])
-            self.SILENCE_DURATION = int(self.__system_api.settings.load_system_dict("MultimediaSettings", "SILENCE_DURATION", {"value": 2})["value"])
+            self.THRESHOLD = threshold
+            self.SILENCE_DURATION = silence_duration
+
 
         def set_plugin_permission(self, plugin_name, permission_type, allowed):
             """
             プラグインのカメラまたはマイクの使用許可を設定します。
+            ※動作確認の便宜上、プラグインが直接設定を変更できるようにしていますが、いずれプラグインからは確認ダイアログ
+            だけを呼び出し、そこからこのメソッドを呼び出す形に変更します
 
             Args:
                 plugin_name (str): プラグイン名。
                 permission_type (str): 許可の種類。"camera"または"microphone"。
                 allowed (bool): 許可する場合はTrue、拒否する場合はFalse。
             """
-            permissions = self.system_api.settings.load_system_dict("PluginPermissions", plugin_name)
+            permissions = self.__system_api.settings.load_system_dict("PluginPermissions", plugin_name)
             if permissions is None:
                 permissions = {}
             permissions[permission_type] = allowed
-            self.system_api.settings.save_system_dict("PluginPermissions", plugin_name, permissions)
+            self.__system_api.settings.save_system_dict("PluginPermissions", plugin_name, permissions)
 
         def __check_permission(self, permission_type, caller_plugin):
             plugin_permissions = self.__system_api.settings.load_system_dict("PluginPermissions",caller_plugin)
@@ -353,19 +360,21 @@ class API:
         def record_audio(self, fs=16000, caller_plugin=None):
             if not self.__check_permission("microphone", caller_plugin):
                 raise PermissionError("Microphone access denied for this plugin.")
-            self.logger.info("Recording...")
+            print("Recording...")
             audio_data = []
             start_time = time.time()
 
             def callback(indata, frames, time, status):
-                audio_data.extend(indata)
+                if status:
+                    print(status)
+                audio_data.extend(indata.copy())
                 # Check if the sound level is below the threshold
-                if np.abs(indata).max() < self.THRESHOLD:
+                if np.abs(indata).mean() < self.THRESHOLD:
                     nonlocal start_time
-                    if time.time() - start_time > self.SILENCE_DURATION:
+                    if time.currentTime - start_time > self.SILENCE_DURATION:
                         raise sd.CallbackStop()
                 else:
-                    start_time = time.time()
+                    start_time = time.currentTime
 
             with sd.InputStream(callback=callback, channels=1, samplerate=fs, dtype=np.int16):
                 try:
@@ -373,7 +382,7 @@ class API:
                 except sd.CallbackStop:
                     pass
 
-            self.logger.info("Recording finished.")
+            print("Recording finished.")
             audio = np.array(audio_data, dtype=np.int16)
             return audio
 
@@ -386,27 +395,32 @@ class API:
 
         def transcribe_audio(self, file_path):
             with open(file_path, 'rb') as audio_file:
-                transcript = self.__openai.Audio.transcribe(audio_file)
-            return transcript['text']
+                transcript = self.__openai.audio.transcriptions.create(
+                                    model="whisper-1", 
+                                    file=audio_file
+                                )
+            return transcript.text
 
         def get_text_response(self, prompt):
-            response = self.__openai.Completion.create(
-                engine="gpt-4o",
-                prompt=prompt,
-                max_tokens=150
+            response = self.__openai.chat.completions.create(
+                model="gpt-4",
+                messages= [
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt},
+                ]
             )
-            return response.choices[0].text.strip()
+            return response.choices[0].message.content.strip()
 
-        def text_to_speech(self, text, voice):
-            response = self.__openai.TextToSpeech.create(
-                text=text,
-                voice=voice
-                #voice="en_us_male"
-            )
-            audio_content = response['audio_content']
-            return AudioSegment.from_file(io.BytesIO(audio_content), format="mp3")
+        def text_to_speech(self, text):
+            response = self.__openai.audio.speech.create(
+                model="tts-1",
+                voice="alloy",
+                input=text
+            )     
+            voice_save_path = Path(__file__).parent / "speech.mp3"
+            response.stream_to_file(voice_save_path)
+            return voice_save_path
 
-        def play_audio(self, audio_segment, caller_plugin=None):
-            if not self.__check_permission("audio", caller_plugin):
-                raise PermissionError("Audio playback denied for this plugin.")
-            play(audio_segment)
+        def play_audio(self, path_to_audio):
+            audio = AudioSegment.from_file(path_to_audio)
+            play(audio)
