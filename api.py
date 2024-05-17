@@ -326,7 +326,7 @@ class API:
         def __init__(self, system_api):
             self.__system_api = system_api
         
-        def pre_process(self, threshold=500, silence_duration=2):
+        def pre_process(self, threshold=500, silence_duration=2, voice="alloy"):
             openai_token_dict = self.__system_api.settings.load_system_dict("System_Settings", "OpenAI_Token")
             my_openai_encrypted_token =openai_token_dict.get("api_key").get("value")
             my_openai_token = self.__system_api.crypto.decrypt_system_data(my_openai_encrypted_token)
@@ -334,6 +334,7 @@ class API:
             self.__openai.api_key=my_openai_token
             self.THRESHOLD = threshold
             self.SILENCE_DURATION = silence_duration
+            self.VOICE = voice
 
 
         def set_plugin_permission(self, plugin_name, permission_type, allowed):
@@ -400,21 +401,18 @@ class API:
                                     file=audio_file
                                 )
             return transcript.text
-
-        def get_text_response(self, prompt):
+        
+        def get_text_response(self, messages):
             response = self.__openai.chat.completions.create(
                 model="gpt-4",
-                messages= [
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": prompt},
-                ]
+                messages=messages
             )
             return response.choices[0].message.content.strip()
 
         def text_to_speech(self, text):
             response = self.__openai.audio.speech.create(
                 model="tts-1",
-                voice="alloy",
+                voice=self.VOICE,
                 input=text
             )     
             voice_save_path = Path(__file__).parent / "speech.mp3"

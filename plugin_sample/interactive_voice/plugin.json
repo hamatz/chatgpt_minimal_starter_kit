@@ -1,0 +1,10 @@
+{
+    "name": "音声で対話",
+    "version": "0.1.0",
+    "description": "AIと音声で対話するデモプラグインです",
+    "main_module": "interactive_voice",
+    "plugin_name": "InteractiveVoicePlugin",
+    "icon": "icon.jpg",
+    "use_camera": true,
+    "use_microphone": true
+}

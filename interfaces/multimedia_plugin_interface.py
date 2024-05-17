@@ -7,8 +7,8 @@ class MultimediaPluginInterface(PluginInterface):
     def record_audio(self, fs=16000):
         return self.api.multimedia.record_audio(fs=fs, caller_plugin=self.__class__.__name__)
 
-    def play_audio(self, audio_segment):
-        self.api.multimedia.play_audio(audio_segment)
+    def play_audio(self, audio_file_path):
+        self.api.multimedia.play_audio(audio_file_path)
 
     def save_audio(self, filename, audio, fs=16000):
         self.api.multimedia.save_audio(filename, audio, fs=fs)
