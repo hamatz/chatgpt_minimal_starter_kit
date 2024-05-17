@@ -46,7 +46,11 @@ class InteractiveVoicePlugin(MultimediaPluginInterface):
             if not self.is_recording:
                 self.start_recording()
             else:
-                self.stop_recording()
+                self.is_recording = False
+                self.talking_crystal.is_recording = False
+                self.talking_crystal.crystal.bgcolor = self.talking_crystal.idle_color
+                self.talking_crystal.spinner.visible = False
+                self.talking_crystal.crystal_container.update()
 
         icon_path = os.path.join(plugin_dir_path, "back_button.png")
         with open(icon_path, "rb") as image_file:
@@ -78,25 +82,26 @@ class InteractiveVoicePlugin(MultimediaPluginInterface):
 
     def start_recording(self):
         self.is_recording = True
-        
+        self.talking_crystal.is_recording = True
+        self.talking_crystal.crystal.bgcolor = self.talking_crystal.recording_color
+        self.talking_crystal.spinner.visible = True
+        self.talking_crystal.crystal_container.update()
+
+        self.chat_view.controls.append(ft.Text("Recording started..."))
+        self.page.update()
+
         while self.is_recording:
-            self.talking_crystal.is_recording = True
-            self.talking_crystal.spinner.visible = True
-            self.talking_crystal.crystal_container.update()
-            
-            self.chat_view.controls.append(ft.Text("Recording started..."))
-            self.page.update()
-
             audio = self.record_audio(fs=16000)
-
-            self.talking_crystal.is_recording = False
-            self.talking_crystal.spinner.visible = False
-            self.talking_crystal.crystal_container.update()
 
             self.save_audio("input.wav", audio)
 
             self.chat_view.controls.append(ft.Text("Recording finished."))
             self.page.update()
+
+            self.talking_crystal.is_recording = False
+            self.talking_crystal.crystal.bgcolor = self.talking_crystal.idle_color
+            self.talking_crystal.spinner.visible = False
+            self.talking_crystal.crystal_container.update()
 
             transcribed_text = self.transcribe_audio("input.wav")
             self.chat_view.controls.append(ft.Text(f"Transcribed Text: {transcribed_text}"))
@@ -111,13 +116,19 @@ class InteractiveVoicePlugin(MultimediaPluginInterface):
             saved_file_path = self.text_to_speech(response_text)
             self.play_audio(saved_file_path)
 
-            # 一定時間待機してから次の録音を開始します
             self.page.update()
             time.sleep(1)
 
+            if not self.is_recording:
+                break
+            else:
+                self.talking_crystal.is_recording = True
+                self.talking_crystal.crystal.bgcolor = self.talking_crystal.recording_color
+                self.talking_crystal.spinner.visible = True
+                self.talking_crystal.crystal_container.update()
     def stop_recording(self):
         self.is_recording = False
         self.talking_crystal.is_recording = False
-        self.talking_crystal.spinner.visible = False
         self.talking_crystal.crystal.bgcolor = self.talking_crystal.idle_color
+        self.talking_crystal.spinner.visible = False
         self.talking_crystal.crystal_container.update()
