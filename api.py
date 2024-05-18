@@ -338,7 +338,7 @@ class API:
             self.SILENCE_DURATION = silence_duration
             self.VOICE = voice
 
-        def request_permission(self, permission_type, plugin_name):
+        def __request_permission(self, permission_type, plugin_name):
             def close_dialog(e):
                 self.page.dialog.open = False
                 self.page.update()
@@ -375,12 +375,12 @@ class API:
         def __check_permission(self, permission_type, caller_plugin):
             plugin_permissions = self.__system_api.settings.load_system_dict("PluginPermissions", caller_plugin)
             if plugin_permissions is None or not plugin_permissions.get(permission_type, False):
-                self.request_permission(permission_type, caller_plugin)
+                self.__request_permission(permission_type, caller_plugin)
                 plugin_permissions = self.__system_api.settings.load_system_dict("PluginPermissions", caller_plugin)
             return plugin_permissions.get(permission_type, False)
 
         def record_audio(self, fs=16000, caller_plugin=None):
-            if not self.__check_permission("microphone", caller_plugin):
+            if not self.__check_permission("microphone_allowed", caller_plugin):
                 raise PermissionError("Microphone access denied for this plugin.")
             print("Recording...")
             audio_data = []

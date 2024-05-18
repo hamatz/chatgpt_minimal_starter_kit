@@ -5,6 +5,6 @@
     "main_module": "interactive_voice",
     "plugin_name": "InteractiveVoicePlugin",
     "icon": "icon.jpg",
-    "use_camera": true,
+    "use_camera": false,
     "use_microphone": true
 }

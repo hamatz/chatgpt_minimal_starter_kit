@@ -64,10 +64,21 @@ class PluginManager:
         use_microphone = plugin_info.get("use_microphone", False)
         plugin_name = plugin_info.get("plugin_name")
         
-        # パーミッションの付与は行わず、初期状態を保存するだけにする
+        # 既存のパーミッション情報を取得
+        existing_permissions = self.__system_api.settings.load_system_dict("PluginPermissions", plugin_name)
+        if existing_permissions is None:
+            existing_permissions = {}
+        
+        # 既存のパーミッション情報があれば、それを残す
+        camera_allowed = existing_permissions.get("camera_allowed", use_camera)
+        microphone_allowed = existing_permissions.get("microphone_allowed", use_microphone)
+        
+        # パーミッション情報を保存
         self.__system_api.settings.save_system_dict("PluginPermissions", plugin_name, {
             "use_camera": use_camera,
             "use_microphone": use_microphone,
+            "camera_allowed": camera_allowed,
+            "microphone_allowed": microphone_allowed,
         })
         sys.path.append(plugin_dir)
         plugin_module = importlib.import_module(plugin_info["main_module"])
