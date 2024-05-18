@@ -17,6 +17,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 import io
 from pathlib import Path
+import flet as ft
 
 class API:
 
@@ -326,37 +327,57 @@ class API:
         def __init__(self, system_api):
             self.__system_api = system_api
         
-        def pre_process(self, threshold=500, silence_duration=2, voice="alloy"):
+        def pre_process(self, page,threshold=500, silence_duration=2, voice="alloy"):
             openai_token_dict = self.__system_api.settings.load_system_dict("System_Settings", "OpenAI_Token")
             my_openai_encrypted_token =openai_token_dict.get("api_key").get("value")
             my_openai_token = self.__system_api.crypto.decrypt_system_data(my_openai_encrypted_token)
             self.__openai = openai
             self.__openai.api_key=my_openai_token
+            self.page = page
             self.THRESHOLD = threshold
             self.SILENCE_DURATION = silence_duration
             self.VOICE = voice
 
+        def request_permission(self, permission_type, plugin_name):
+            def close_dialog(e):
+                self.page.dialog.open = False
+                self.page.update()
 
-        def set_plugin_permission(self, plugin_name, permission_type, allowed):
-            """
-            プラグインのカメラまたはマイクの使用許可を設定します。
-            ※動作確認の便宜上、プラグインが直接設定を変更できるようにしていますが、いずれプラグインからは確認ダイアログ
-            だけを呼び出し、そこからこのメソッドを呼び出す形に変更します
+            def grant_permission(e):
+                self.__set_plugin_permission(plugin_name, permission_type, True)
+                close_dialog(e)
 
-            Args:
-                plugin_name (str): プラグイン名。
-                permission_type (str): 許可の種類。"camera"または"microphone"。
-                allowed (bool): 許可する場合はTrue、拒否する場合はFalse。
-            """
-            permissions = self.__system_api.settings.load_system_dict("PluginPermissions", plugin_name)
-            if permissions is None:
-                permissions = {}
-            permissions[permission_type] = allowed
-            self.__system_api.settings.save_system_dict("PluginPermissions", plugin_name, permissions)
+            def deny_permission(e):
+                self.__set_plugin_permission(plugin_name, permission_type, False)
+                close_dialog(e)
+
+            dialog = ft.AlertDialog(
+                title=ft.Text(f"{plugin_name}のパーミッション要求"),
+                content=ft.Text(f"{plugin_name}が{permission_type}へのアクセスを要求しています。許可しますか？"),
+                actions=[
+                    ft.TextButton("許可", on_click=grant_permission),
+                    ft.TextButton("拒否", on_click=deny_permission),
+                ],
+                actions_alignment=ft.MainAxisAlignment.END,
+            )
+
+            self.page.dialog = dialog
+            self.page.dialog.open = True
+            self.page.update()
+
+        def __set_plugin_permission(self, plugin_name, permission_type, allowed):
+            plugin_permissions = self.__system_api.settings.load_system_dict("PluginPermissions", plugin_name)
+            if plugin_permissions is None:
+                plugin_permissions = {}
+            plugin_permissions[permission_type] = allowed
+            self.__system_api.settings.save_system_dict("PluginPermissions", plugin_name, plugin_permissions)
 
         def __check_permission(self, permission_type, caller_plugin):
-            plugin_permissions = self.__system_api.settings.load_system_dict("PluginPermissions",caller_plugin)
-            return plugin_permissions.get(f"{permission_type}_allowed", False)
+            plugin_permissions = self.__system_api.settings.load_system_dict("PluginPermissions", caller_plugin)
+            if plugin_permissions is None or not plugin_permissions.get(permission_type, False):
+                self.request_permission(permission_type, caller_plugin)
+                plugin_permissions = self.__system_api.settings.load_system_dict("PluginPermissions", caller_plugin)
+            return plugin_permissions.get(permission_type, False)
 
         def record_audio(self, fs=16000, caller_plugin=None):
             if not self.__check_permission("microphone", caller_plugin):

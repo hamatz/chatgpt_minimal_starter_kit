@@ -63,7 +63,7 @@ class InteractiveVoicePlugin(MultimediaPluginInterface):
         my_header_widget = get_component("SimpleHeader2", icon=clickable_icon, title_text="Interactive Voice v.0.1.0", color="#20b2aa")
         self.talking_crystal = get_component("TalkingCrystal", name="Push to Talk", recording_color=ft.colors.RED, idle_color=ft.colors.BLUE_GREY_200,on_click=on_crystal_click)
         self.chat_view = ft.ListView(expand=1, spacing=10, auto_scroll=True)
-        self.api.multimedia.pre_process(threshold=500, silence_duration=1, voice="nova")
+        self.api.multimedia.pre_process(self.page, threshold=500, silence_duration=1, voice="nova")
 
         self.is_recording = False
 
