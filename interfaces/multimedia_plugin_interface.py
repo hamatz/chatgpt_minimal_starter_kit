@@ -3,9 +3,10 @@ from .plugin_interface import PluginInterface
 class MultimediaPluginInterface(PluginInterface):
     def __init__(self, intent_conductor, api):
         super().__init__(intent_conductor, api)
+        self.caller_plugin = self.__class__.__name__
 
     def record_audio(self, fs=16000):
-        return self.api.multimedia.record_audio(fs=fs, caller_plugin=self.__class__.__name__)
+        return self.api.multimedia.record_audio(fs=fs, caller_plugin=self.caller_plugin)
 
     def play_audio(self, audio_file_path):
         self.api.multimedia.play_audio(audio_file_path)
@@ -21,3 +22,6 @@ class MultimediaPluginInterface(PluginInterface):
 
     def text_to_speech(self, text):
         return self.api.multimedia.text_to_speech(text)
+    
+    def capture_image(self):
+        return self.api.multimedia.capture_image(caller_plugin=self.caller_plugin)

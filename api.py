@@ -1,7 +1,9 @@
+import base64
 import hashlib
 import os
 import logging
 import time
+import cv2
 from openai import AzureOpenAI, OpenAI
 import openai
 from langchain_community.vectorstores import Qdrant
@@ -443,3 +445,39 @@ class API:
         def play_audio(self, path_to_audio):
             audio = AudioSegment.from_file(path_to_audio)
             play(audio)
+
+        def capture_image(self, caller_plugin):
+            if not self.__check_permission("camera", caller_plugin=caller_plugin):
+                raise PermissionError("Camera access denied for this plugin.")
+            
+            cap = cv2.VideoCapture(0)
+            ret, frame = cap.read()
+            cap.release()
+
+            if not ret:
+                raise Exception("Failed to capture image from camera.")
+
+            return frame
+
+        def save_image(self, filename, image):
+            cv2.imwrite(filename, image)
+
+        def encode_image_to_base64(self, image):
+            _, img_encoded = cv2.imencode('.jpg', image)
+            return base64.b64encode(img_encoded).decode('utf-8')
+
+        def vision_api_request(self, image_base64, question):
+            message = [
+                {"role": "user", "content": [
+                    {"type": "text", "text": question},
+                    {"type": "image", "image_base64": image_base64},
+                ]},
+            ]
+
+            response = self.__openai.chat.completions.create(
+                model="gpt-4o",
+                messages=message,
+                max_tokens=300,
+            )
+
+            return response.choices[0].message.content.strip()
