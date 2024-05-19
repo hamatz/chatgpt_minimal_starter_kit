@@ -447,7 +447,7 @@ class API:
             play(audio)
 
         def capture_image(self, caller_plugin):
-            if not self.__check_permission("camera", caller_plugin=caller_plugin):
+            if not self.__check_permission("camera_allowed", caller_plugin=caller_plugin):
                 raise PermissionError("Camera access denied for this plugin.")
             
             cap = cv2.VideoCapture(0)
@@ -462,16 +462,16 @@ class API:
         def save_image(self, filename, image):
             cv2.imwrite(filename, image)
 
-        def encode_image_to_base64(self, image):
-            _, img_encoded = cv2.imencode('.jpg', image)
-            return base64.b64encode(img_encoded).decode('utf-8')
+        def encode_image(self, image_path):
+            with open(image_path, "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode('utf-8')
 
         def vision_api_request(self, image_base64, question):
             message = [
-                {"role": "user", "content": [
-                    {"type": "text", "text": question},
-                    {"type": "image", "image_base64": image_base64},
-                ]},
+                {
+                    "role": "user",
+                    "content": question + "\n\n<image>data:image/jpeg;base64," + image_base64 + "</image>"
+                }
             ]
 
             response = self.__openai.chat.completions.create(
