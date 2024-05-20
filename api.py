@@ -427,7 +427,7 @@ class API:
         
         def get_text_response(self, messages):
             response = self.__openai.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=messages
             )
             return response.choices[0].message.content.strip()
