@@ -326,6 +326,9 @@ class API:
             raise PermissionError("Access denied.")
     
     class MultimediaUtils:
+        """
+        GPT-4o の音声やVision向けの新しいAPIが開示されるまでの暫定的な実装なので、正式版になるまで本クラスはドキュメントには敢えて記載しない
+        """
         def __init__(self, system_api):
             self.__system_api = system_api
         
