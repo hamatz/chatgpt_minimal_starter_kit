@@ -70,8 +70,8 @@ class PluginManager:
             existing_permissions = {}
         
         # 既存のパーミッション情報があれば、それを残す
-        camera_allowed = existing_permissions.get("camera_allowed", use_camera)
-        microphone_allowed = existing_permissions.get("microphone_allowed", use_microphone)
+        camera_allowed = existing_permissions.get("camera_allowed", False)
+        microphone_allowed = existing_permissions.get("microphone_allowed", False)
         
         # パーミッション情報を保存
         self.__system_api.settings.save_system_dict("PluginPermissions", plugin_name, {
