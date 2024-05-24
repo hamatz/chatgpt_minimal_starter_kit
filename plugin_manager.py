@@ -13,6 +13,7 @@ from typing import Callable, Dict
 import requests
 from interfaces.plugin_interface import PluginInterface
 from interfaces.system_plugin_interface import SystemPluginInterface
+from interfaces.multimedia_plugin_interface import MultimediaPluginInterface
 from intent_conductor import IntentConductor
 from system_api_layer import SystemAPI
 from api import API
