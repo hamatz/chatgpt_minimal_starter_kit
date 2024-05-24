@@ -436,17 +436,17 @@ class API:
             return response.choices[0].message.content.strip()
 
         def text_to_speech(self, text):
+            voice_save_path =  "speech.mp3"
             response = self.__openai.audio.speech.create(
                 model="tts-1",
                 voice=self.VOICE,
                 input=text
             )     
-            voice_save_path = Path(__file__).parent / "speech.mp3"
             response.stream_to_file(voice_save_path)
             return voice_save_path
 
         def play_audio(self, path_to_audio):
-            audio = AudioSegment.from_file(path_to_audio)
+            audio = AudioSegment.from_mp3(path_to_audio)
             play(audio)
 
         def capture_image(self, caller_plugin):
