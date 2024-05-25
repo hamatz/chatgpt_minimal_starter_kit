@@ -96,14 +96,22 @@ class SettingsPlugin(SystemPluginInterface):
             edited_data = tile.title.value
             if is_secure:
                 target_data = self.system_api.crypto.encrypt_system_data(edited_data)
-                tile.title.value = target_data  # UI上で暗号化された値を表示する必要があるかどうかは要検討。今のところは一度設定したら見えない方が安全なのでは？という方針
+                tile.title.value = target_data
             else:
                 target_data = edited_data
             ui_type = "description" if prop_name == "description" else "text"
+            
+            # 既存のis_encryptedとdescriptionの情報を保持
+            is_encrypted = {"value": is_secure, "ui_type": "toggle"}
+            description = target_dict.get("description", {"value": "", "ui_type": "description"})
+            
             target_dict[prop_name] = {"value": target_data, "ui_type": ui_type}
+            target_dict["is_encrypted"] = is_encrypted
+            target_dict["description"] = description
+            
             self.system_api.settings.save_system_dict(MY_APP_NAME, service_name, target_dict)
             self.settings_info_dict = self.system_api.settings.get_system_dicts_all()
-            change_edit_mode(e, tile)  # 編集モードを切り替えて編集不可状態に戻す
+            change_edit_mode(e, tile)
 
         def load_system_info():
             system_data_dict = self.system_api.settings.get_system_dicts_all()
