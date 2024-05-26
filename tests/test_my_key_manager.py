@@ -12,7 +12,7 @@ class TestMyKeyManager(unittest.TestCase):
         self.ui_manager = None
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
         self.my_key_file_name = "test_my_key.json"
-        self.key_manager = MyKeyManager(self.page, self.ui_manager, self.base_dir, self.my_key_file_name)
+        self.key_manager = MyKeyManager(self.page, self.base_dir, self.my_key_file_name)
 
     @patch('builtins.print')
     def test_load_my_key_with_correct_password(self, mock_print):
@@ -24,8 +24,8 @@ class TestMyKeyManager(unittest.TestCase):
         self.assertTrue(result)
         mock_print.assert_called_with("Key was successfully decrypted and loaded")
 
-    @patch('builtins.print')
-    def test_load_my_key_with_incorrect_password(self, mock_print):
+    @patch('flet.SnackBar')
+    def test_load_my_key_with_incorrect_password(self, mock_snackbar):
         # 正しいパスワードでキーを生成し、保存
         correct_password = "correct_password"
         self.key_manager._MyKeyManager__generate_my_key(correct_password)
@@ -33,7 +33,8 @@ class TestMyKeyManager(unittest.TestCase):
         incorrect_password = "wrong_password"
         result = self.key_manager.load_my_key(incorrect_password)
         self.assertFalse(result)
-        mock_print.assert_called_with('password error')
+        mock_snackbar.assert_called_once()
+        self.assertEqual(mock_snackbar.call_args[0][0].value, f"パスワードエラーです {self.key_manager.failed_attempts}/5")
 
     @patch("hashlib.sha256")
     def test_compute_hash(self, mock_sha256):
@@ -53,7 +54,7 @@ class TestMyKeyManager(unittest.TestCase):
         # テスト開始時の時刻を設定
         start_time = datetime(2020, 1, 1)
         mock_datetime.now.return_value = start_time
-        manager = MyKeyManager(MagicMock() , None, os.path.dirname(os.path.abspath(__file__)), "test_my_key.json")
+        manager = MyKeyManager(MagicMock() , os.path.dirname(os.path.abspath(__file__)), "test_my_key.json")
         # 誤ったパスワードで5回ログインを試みる
         for _ in range(5):
             result = manager.load_my_key("wrong_password")
