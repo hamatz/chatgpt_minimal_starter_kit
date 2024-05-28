@@ -279,7 +279,12 @@ class PluginManager:
                     shutil.rmtree(plugin_dir)
             except FileNotFoundError:
                 pass
-            self._load_plugin(old_plugin_dir, container)
+            # プラグインの更新を適用
+            self.reload_plugin(plugin_name)
+            # インストールされているプラグインの一覧を再読み込み
+            container.controls.clear()
+            self.load_installed_plugins(container)
+            self.load_system_plugins(container)
         else:
             try:
                 if os.path.exists(plugin_dir):
@@ -288,6 +293,48 @@ class PluginManager:
                 pass
 
         return result
+
+    def reload_plugin(self, plugin_name):
+        plugin_dir = self.installed_plugins.get(plugin_name)
+        if plugin_dir:
+            with open(os.path.join(plugin_dir, "plugin.json"), 'r', encoding='utf-8') as f:
+                plugin_info = json.load(f)
+            # プラグインモジュールをインポート
+            plugin_module = importlib.import_module(plugin_info["main_module"])
+            # 既存のプラグインインスタンスを破棄
+            plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+            plugin_class.release_instance()
+            # プラグインモジュールをリロード
+            importlib.reload(plugin_module)
+            # 新しいプラグインインスタンスを作成
+            plugin_class = getattr(plugin_module, plugin_info["plugin_name"])
+            plugin_instance = plugin_class(self.intent_conductor, self.api)
+            # プラグインインスタンスを更新
+            self.plugin_dict[plugin_name] = plugin_instance
+
+    def update_plugin_ui(self, plugin_name):
+        plugin_dir = self.installed_plugins.get(plugin_name)
+        if plugin_dir:
+            with open(os.path.join(plugin_dir, "plugin.json"), 'r', encoding='utf-8') as f:
+                plugin_info = json.load(f)
+
+            # アイコン画像の読み込みとエンコード
+            icon_path = os.path.join(plugin_dir, plugin_info["icon"])
+            with open(icon_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+
+            app_icon = ft.Image(src_base64=encoded_string, width=100, height=100)
+            clickable_image = ft.GestureDetector(
+                content=app_icon,
+                on_tap=lambda _: self.show_plugin(plugin_name, plugin_dir)
+            )
+            app_title = plugin_info["name"]
+            app_version = "Version: " + plugin_info["version"]
+            app_container_instance = AppContainer(app_title, app_version, clickable_image, "#ffffff")
+
+            if plugin_name in self.plugin_dict:
+                self.plugin_dict[plugin_name].content = app_container_instance
+                self.myapp_container.update()
 
     def complete_plugin_installation(self, plugin_dir, plugin_name, container: ft.Container):
         if not CodeSecurityScanner.scan_for_forbidden_functions(plugin_dir):
