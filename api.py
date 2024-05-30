@@ -473,7 +473,10 @@ class API:
             message = [
                 {
                     "role": "user",
-                    "content": question + "\n\n<image>data:image/jpeg;base64," + image_base64 + "</image>"
+                    "content":[
+                        {"type": "text", "text": question},
+                        {"type": "image_url", "image_url": {"url" :f"data:image/jpeg;base64, {image_base64}"}  }
+                    ]
                 }
             ]
 
